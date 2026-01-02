@@ -1,0 +1,49 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Lato:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Lato', sans-serif;
+    @apply bg-stone-900 text-white antialiased;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: 'Playfair Display', serif;
+}
+
+/* Video fade animation for smooth loop */
+@keyframes videoFade {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    95% {
+        opacity: 1;
+    }
+
+    98% {
+        opacity: 0.3;
+    }
+}
+
+.video-fade {
+    animation: videoFade var(--video-duration, 10s) linear infinite;
+}
+
+/* Smooth fade transition for video container */
+.video-container video {
+    transition: opacity 0.5s ease-in-out;
+}
