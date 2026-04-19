@@ -169,11 +169,15 @@ async function startServer() {
 }
 
 if (process.env.VERCEL) {
-    // Serverless: connect DB once (mongoose caches the connection) and export handler
-    mongoose.connect(process.env.MONGODB_URI)
+    // Cache the DB connection promise — resolves once, reused on every warm invocation
+    const dbReady = mongoose.connect(process.env.MONGODB_URI)
         .then(() => seedAdmin())
         .catch(console.error);
-    module.exports = app;
+
+    module.exports = async (req, res) => {
+        await dbReady;
+        return app(req, res);
+    };
 } else {
     startServer();
 }
