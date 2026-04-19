@@ -10,9 +10,9 @@ const fs = require('fs');
 // Configure Multer Storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = 'uploads/';
+        const uploadDir = process.env.VERCEL ? '/tmp' : 'uploads/';
         if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
+            fs.mkdirSync(uploadDir, { recursive: true });
         }
         cb(null, uploadDir);
     },

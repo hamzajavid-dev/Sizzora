@@ -151,18 +151,14 @@ app.get('/api/test-uploads', (req, res) => {
     });
 });
 
-// Database Connection and server start
-const seedAdmin = require('./utils/seedAdmin'); // Import seeder
+const seedAdmin = require('./utils/seedAdmin');
 
 async function startServer() {
     try {
         console.log('Connecting to MongoDB...');
         await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/sizzora');
         console.log('MongoDB Connected');
-        
-        // Run Admin Seeder on Startup
         await seedAdmin();
-
         server.listen(PORT, () => {
             console.log(`Server running on port ${PORT}`);
         });
@@ -172,4 +168,12 @@ async function startServer() {
     }
 }
 
-startServer();
+if (process.env.VERCEL) {
+    // Serverless: connect DB once (mongoose caches the connection) and export handler
+    mongoose.connect(process.env.MONGODB_URI)
+        .then(() => seedAdmin())
+        .catch(console.error);
+    module.exports = app;
+} else {
+    startServer();
+}
