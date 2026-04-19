@@ -219,7 +219,7 @@ const ChatWidget = () => {
         return gid;
     };
 
-    const N8N_CHATBOT_WEBHOOK = import.meta.env.VITE_N8N_CHATBOT_WEBHOOK || 'YOUR_N8N_WEBHOOK_URL/webhook/sizzora-chat';
+    const N8N_CHATBOT_WEBHOOK = import.meta.env.VITE_N8N_CHATBOT_WEBHOOK || 'https://n8n-ztpf.onrender.com/webhook/sizzora-chat';
 
     const sendAiMsg = async () => {
         if (!message.trim()) return;
@@ -227,8 +227,10 @@ const ChatWidget = () => {
         const msgs = [...aiMessages, { sender: isAdmin?'admin':'user', content:txt, createdAt:new Date() }];
         setAiMessages(msgs); setIsAiTyping(true);
         try {
-            const r = await axios.post(N8N_CHATBOT_WEBHOOK, { message: txt, sessionId: getSessionId() });
-            setAiMessages([...msgs, { sender:'ai', content:r.data.reply||'Got it!', createdAt:new Date() }]);
+            const payload = { message: txt, sessionId: getSessionId() };
+            const r = await axios.post(N8N_CHATBOT_WEBHOOK, payload);
+            const reply = r.data?.reply || r.data?.message || r.data?.output || (typeof r.data === 'string' ? r.data : null);
+            setAiMessages([...msgs, { sender:'ai', content: reply || 'Got it!', createdAt:new Date() }]);
         } catch {
             setAiMessages([...msgs, { sender:'ai', content:"Sorry, I'm having trouble right now. Try again in a moment!", createdAt:new Date() }]);
         } finally { setIsAiTyping(false); }
