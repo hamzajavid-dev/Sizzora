@@ -10,7 +10,7 @@ const Contact = () => {
             <div className="relative">
                 <div className="w-full h-64 md:h-80 overflow-hidden">
                     <img
-                        src="https://www.mcdonalds.com.pk/wp-content/uploads/2022/08/Contact-Us.png"
+                        src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&q=80&w=1974"
                         alt="Contact Us"
                         className="w-full h-full object-cover"
                     />

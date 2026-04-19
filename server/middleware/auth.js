@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-module.exports = function (req, res, next) {
+const auth = (req, res, next) => {
     // Get token from cookies
     const token = req.cookies.token;
 
@@ -18,3 +18,17 @@ module.exports = function (req, res, next) {
         res.status(401).json({ message: 'Token is not valid' });
     }
 };
+
+const verifyAdmin = (req, res, next) => {
+    auth(req, res, () => {
+        if (req.user && req.user.role === 'admin') {
+            next();
+        } else {
+            res.status(403).json({ message: 'Access denied. Admin only.' });
+        }
+    });
+};
+
+module.exports = auth;
+module.exports.verifyAdmin = verifyAdmin;
+

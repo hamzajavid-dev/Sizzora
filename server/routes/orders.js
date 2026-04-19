@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
 const ArchivedOrder = require('../models/ArchivedOrder');
+const Chat = require('../models/Chat');
+const User = require('../models/User');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -23,6 +25,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 const jwt = require('jsonwebtoken');
+const auth = require('../middleware/auth');
+const { verifyAdmin } = auth;
 
 // Create Order (with Image Upload)
 router.post('/', upload.single('paymentProofImage'), async (req, res) => {
@@ -72,6 +76,31 @@ router.post('/', upload.single('paymentProofImage'), async (req, res) => {
         });
 
         await order.save();
+        
+        // Automatically create chat for this order if user is not guest
+        if (userId !== 'guest') {
+            try {
+                const user = await User.findById(userId);
+                if (user) {
+                    const newChat = new Chat({
+                        userId: userId,
+                        userName: user.displayName || user.email,
+                        userEmail: user.email,
+                        orderId: order._id,
+                        chatType: 'order',
+                        chatTitle: `Order #${order._id.toString().slice(-6)}`,
+                        isActive: true,
+                        messages: []
+                    });
+                    await newChat.save();
+                    console.log('Chat created for order:', order._id);
+                }
+            } catch (chatErr) {
+                console.error('Failed to create chat for order:', chatErr);
+                // Don't fail the order creation if chat fails
+            }
+        }
+        
         res.status(201).json(order);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -79,7 +108,7 @@ router.post('/', upload.single('paymentProofImage'), async (req, res) => {
 });
 
 // Archive Order
-router.post('/:id/archive', async (req, res) => {
+router.post('/:id/archive', verifyAdmin, async (req, res) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) {
@@ -110,7 +139,7 @@ router.post('/:id/archive', async (req, res) => {
 });
 
 // Get Archived Orders
-router.get('/archived', async (req, res) => {
+router.get('/archived', verifyAdmin, async (req, res) => {
     try {
         const archives = await ArchivedOrder.find().sort({ archivedAt: -1 });
         res.json(archives);
@@ -120,18 +149,40 @@ router.get('/archived', async (req, res) => {
 });
 
 // Delete Archived Order (Permanently)
-router.delete('/archived/:id', async (req, res) => {
+router.delete('/archived/:id', verifyAdmin, async (req, res) => {
     try {
+        const archivedOrder = await ArchivedOrder.findById(req.params.id);
+        
+        if (!archivedOrder) {
+            return res.status(404).json({ error: 'Archived order not found' });
+        }
+
+        // Delete payment proof image if it exists
+        if (archivedOrder.paymentProofImage) {
+            const imagePath = path.join(__dirname, '..', archivedOrder.paymentProofImage);
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error('Failed to delete image:', err);
+                } else {
+                    console.log('Payment proof image deleted:', imagePath);
+                }
+            });
+        }
+
         await ArchivedOrder.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Archived order deleted permanently' });
+        res.json({ message: 'Archived order and associated files deleted permanently' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
 // Get My Orders
-router.get('/myorders/:userId', async (req, res) => {
+router.get('/myorders/:userId', auth, async (req, res) => {
     try {
+        // Ensure user is requesting their own orders
+        if (req.user.userId !== req.params.userId && req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'Access denied' });
+        }
         const orders = await Order.find({ user: req.params.userId }).populate('items.product');
         res.json(orders);
     } catch (err) {
@@ -140,7 +191,7 @@ router.get('/myorders/:userId', async (req, res) => {
 });
 
 // Admin: Get All Orders
-router.get('/all', async (req, res) => {
+router.get('/all', verifyAdmin, async (req, res) => {
     try {
         const orders = await Order.find().populate('user').populate('items.product');
         res.json(orders);
@@ -150,13 +201,56 @@ router.get('/all', async (req, res) => {
 });
 
 // Admin: Update Status
-router.put('/:id/status', async (req, res) => {
+router.put('/:id/status', verifyAdmin, async (req, res) => {
     try {
         const { status } = req.body;
         const order = await Order.findByIdAndUpdate(req.params.id, { status }, { new: true });
+        
+        // Update chat isActive/isArchived status if order is delivered or cancelled
+        if (status === 'delivered' || status === 'cancelled') {
+            await Chat.findOneAndUpdate(
+                { orderId: req.params.id },
+                { isActive: false, isArchived: true }
+            );
+        } else {
+            // Reactivate if status changes back
+            await Chat.findOneAndUpdate(
+                { orderId: req.params.id },
+                { isActive: true, isArchived: false }
+            );
+        }
+        
         res.json(order);
     } catch (err) {
         res.status(400).json({ error: err.message });
+    }
+});
+
+// Delete Active Order (Permanently) - Admin only
+router.delete('/:id', verifyAdmin, async (req, res) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        
+        if (!order) {
+            return res.status(404).json({ error: 'Order not found' });
+        }
+
+        // Delete payment proof image if it exists
+        if (order.paymentProofImage) {
+            const imagePath = path.join(__dirname, '..', order.paymentProofImage);
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.error('Failed to delete image:', err);
+                } else {
+                    console.log('Payment proof image deleted:', imagePath);
+                }
+            });
+        }
+
+        await Order.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Order and associated files deleted permanently' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 

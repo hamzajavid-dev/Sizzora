@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import { FaShoppingCart, FaSearch } from 'react-icons/fa';
+import { getImageUrl } from '../utils/imageUtils';
 
 const Menu = () => {
     const [products, setProducts] = useState([]);
@@ -40,7 +41,7 @@ const Menu = () => {
     });
 
     return (
-        <div className="min-h-screen bg-stone-900 pt-24 pb-16 px-4 md:px-8 text-white">
+        <div className="min-h-screen bg-stone-900 pt-32 pb-24 px-4 md:px-8 text-white">
             {/* Header */}
             <div className="max-w-7xl mx-auto">
                 <motion.div
@@ -108,7 +109,7 @@ const Menu = () => {
                             >
                                 <div className="h-52 overflow-hidden relative">
                                     <img
-                                        src={product.image}
+                                        src={getImageUrl(product.image)}
                                         alt={product.name}
                                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                     />

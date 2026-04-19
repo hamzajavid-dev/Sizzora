@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { motion } from 'framer-motion';
+import ChatWidget from '../components/ChatWidget';
 
 const Account = () => {
     const { user, logout, loading } = useAuth(); // Get loading state
@@ -19,7 +20,7 @@ const Account = () => {
 
         const fetchOrders = async () => {
             try {
-                const res = await axios.get(`http://localhost:5000/api/orders/myorders/${user.id}`);
+                const res = await axios.get(`/api/orders/myorders/${user.id}`);
                 setOrders(res.data);
             } catch (err) {
                 console.error("Failed to fetch orders:", err);
@@ -65,124 +66,130 @@ const Account = () => {
     const pastOrders = orders.filter(o => o.status === 'delivered' || o.status === 'cancelled').sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
     return (
-        <div className="min-h-screen pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-
-            {/* Header / Profile */}
-            <div className="flex flex-col md:flex-row justify-between items-center bg-secondary/10 p-6 rounded-xl border border-secondary/30 mb-8 backdrop-blur-sm">
+        <div className="min-h-screen pt-32 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+                {/* Header / Profile */}
+            <div className="flex flex-col md:flex-row justify-between items-center bg-stone-800/80 p-8 rounded-2xl border-2 border-primary/20 mb-10 backdrop-blur-md shadow-[0_0_30px_rgba(254,183,5,0.1)]">
                 <div>
-                    <h1 className="text-3xl font-bold text-white mb-2">Hello, <span className="text-accent">{user.name}</span>!</h1>
-                    <p className="text-gray-400">Email: {user.email}</p>
-                    <p className="text-gray-400">Phone: {user.phone}</p>
+                    <h1 className="text-4xl font-extrabold mb-3 text-white drop-shadow-md">
+                        Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">{user.name}</span>!
+                    </h1>
+                    <div className="space-y-1">
+                        <p className="text-gray-200 font-semibold tracking-wide"><span className="text-primary uppercase text-xs font-bold mr-2">Email:</span> {user.email}</p>
+                        <p className="text-gray-200 font-semibold tracking-wide"><span className="text-primary uppercase text-xs font-bold mr-2">Phone:</span> {user.phone}</p>
+                    </div>
                 </div>
                 <button
                     onClick={() => { logout(); navigate('/login'); }}
-                    className="mt-4 md:mt-0 bg-red-500/20 hover:bg-red-500/40 text-red-200 px-6 py-2 rounded-lg border border-red-500/50 transition-colors"
+                    className="mt-6 md:mt-0 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white font-bold uppercase tracking-wider px-8 py-3 rounded-lg shadow-lg border border-red-500/30 transition-all transform hover:scale-105"
                 >
                     Logout
                 </button>
             </div>
 
-            {/* Current Orders */}
-            <h2 className="text-2xl font-bold text-white mb-4">Current Orders</h2>
-            {activeOrders.length === 0 ? (
-                <div className="bg-stone-800/50 p-6 rounded-xl border border-stone-700 text-gray-400 text-center mb-8">
-                    No active orders at the moment.
-                </div>
-            ) : (
-                <div className="grid gap-6 mb-12">
-                    {activeOrders.map(order => (
-                        <motion.div
-                            key={order._id}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="bg-stone-800 p-6 rounded-xl border border-secondary/30"
-                        >
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <p className="text-sm text-gray-400">Order ID: <span className="font-mono text-white">#{order._id.slice(-6)}</span></p>
-                                    <p className="text-lg font-bold text-white mt-1">Total: ${order.totalAmount.toFixed(2)}</p>
-                                </div>
-                                <div className={`text-lg font-bold capitalize ${getStatusColor(order.status)}`}>
-                                    {order.status}
-                                </div>
-                            </div>
-
-                            {/* Status Bar */}
-                            <div className="w-full bg-stone-700 h-3 rounded-full mb-4 overflow-hidden relative">
+            {/* Current Orders - Only for non-admin users */}
+            {user.role !== 'admin' && (
+                <>
+                    <h2 className="text-3xl font-extrabold text-white mb-6 border-l-4 border-primary pl-4">Current Orders</h2>
+                    {activeOrders.length === 0 ? (
+                        <div className="bg-stone-800/50 p-6 rounded-xl border border-stone-700 text-gray-400 text-center mb-8">
+                            No active orders at the moment.
+                        </div>
+                    ) : (
+                        <div className="grid gap-6 mb-12">
+                            {activeOrders.map(order => (
                                 <motion.div
-                                    className={`h-full rounded-full ${order.status === 'cancelled' ? 'bg-red-500' : 'bg-accent'}`}
-                                    initial={{ width: 0 }}
-                                    animate={{ width: getProgressWidth(order.status) }}
-                                    transition={{ duration: 1 }}
-                                />
-                            </div>
-                            <div className="flex justify-between text-xs text-gray-500">
-                                <span>Pending</span>
-                                <span>Preparing</span>
-                                <span>Out for Delivery</span>
-                                <span>Delivered</span>
-                            </div>
+                                    key={order._id}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="bg-stone-800 p-6 rounded-xl border border-secondary/30"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <p className="text-sm text-gray-400">Order ID: <span className="font-mono text-white">#{order._id.slice(-6)}</span></p>
+                                            <p className="text-lg font-bold text-white mt-1">Total: ${order.totalAmount.toFixed(2)}</p>
+                                        </div>
+                                        <div className={`text-lg font-bold capitalize ${getStatusColor(order.status)}`}>
+                                            {order.status}
+                                        </div>
+                                    </div>
 
-                            <div className="mt-4 pt-4 border-t border-stone-700">
-                                <h4 className="text-sm font-semibold text-gray-300 mb-2">Items:</h4>
-                                <ul className="list-disc list-inside text-gray-400 text-sm">
-                                    {order.items.map((item, idx) => (
-                                        <li key={idx}>
-                                            {item.quantity}x {item.product?.name || 'Unknown Item'}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            )}
+                                    {/* Status Bar */}
+                                    <div className="w-full bg-stone-700 h-3 rounded-full mb-4 overflow-hidden relative">
+                                        <motion.div
+                                            className={`h-full rounded-full ${order.status === 'cancelled' ? 'bg-red-500' : 'bg-accent'}`}
+                                            initial={{ width: 0 }}
+                                            animate={{ width: getProgressWidth(order.status) }}
+                                            transition={{ duration: 1 }}
+                                        />
+                                    </div>
+                                    <div className="flex justify-between text-xs text-gray-500">
+                                        <span>Pending</span>
+                                        <span>Preparing</span>
+                                        <span>Out for Delivery</span>
+                                        <span>Delivered</span>
+                                    </div>
 
-            {/* Order History */}
-            <h2 className="text-2xl font-bold text-white mb-4">Order History</h2>
-            <div className="bg-stone-800 rounded-xl border border-stone-700 overflow-hidden">
-                {pastOrders.length === 0 ? (
-                    <div className="p-8 text-center text-gray-400">No past orders found.</div>
-                ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-stone-900/50 text-gray-400 text-sm font-medium">
-                                <tr>
-                                    <th className="px-6 py-4">Date</th>
-                                    <th className="px-6 py-4">Order ID</th>
-                                    <th className="px-6 py-4">Status</th>
-                                    <th className="px-6 py-4 text-right">Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-stone-700">
-                                {pastOrders.map(order => (
-                                    <tr key={order._id} className="hover:bg-stone-700/30 transition-colors">
-                                        <td className="px-6 py-4 text-gray-300">
-                                            {new Date(order.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 font-mono text-sm text-gray-400">
-                                            #{order._id.slice(-6)}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold capitalize bg-opacity-10 border ${order.status === 'delivered'
-                                                ? 'bg-green-500 text-green-400 border-green-500/30'
-                                                : 'bg-red-500 text-red-400 border-red-500/30'
-                                                }`}>
-                                                {order.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right font-bold text-white">
-                                            ${order.totalAmount.toFixed(2)}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                    <div className="mt-4 pt-4 border-t border-stone-700">
+                                        <h4 className="text-sm font-semibold text-gray-300 mb-2">Items:</h4>
+                                        <ul className="list-disc list-inside text-gray-400 text-sm">
+                                            {order.items.map((item, idx) => (
+                                                <li key={idx}>
+                                                    {item.quantity}x {item.product?.name || 'Unknown Item'}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Order History */}
+                    <h2 className="text-3xl font-extrabold text-white mb-6 border-l-4 border-primary pl-4">Order History</h2>
+                    <div className="bg-stone-800 rounded-xl border border-stone-700 overflow-hidden">
+                        {pastOrders.length === 0 ? (
+                            <div className="p-8 text-center text-gray-400">No past orders found.</div>
+                        ) : (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left">
+                                    <thead className="bg-stone-900/50 text-gray-400 text-sm font-medium">
+                                        <tr>
+                                            <th className="px-6 py-4">Date</th>
+                                            <th className="px-6 py-4">Order ID</th>
+                                            <th className="px-6 py-4">Status</th>
+                                            <th className="px-6 py-4 text-right">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-stone-700">
+                                        {pastOrders.map(order => (
+                                            <tr key={order._id} className="hover:bg-stone-700/30 transition-colors">
+                                                <td className="px-6 py-4 text-gray-300">
+                                                    {new Date(order.createdAt).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-6 py-4 font-mono text-sm text-gray-400">
+                                                    #{order._id.slice(-6)}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold capitalize bg-opacity-10 border ${order.status === 'delivered'
+                                                        ? 'bg-green-500 text-green-400 border-green-500/30'
+                                                        : 'bg-red-500 text-red-400 border-red-500/30'
+                                                        }`}>
+                                                        {order.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right font-bold text-white">
+                                                    ${order.totalAmount.toFixed(2)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
                     </div>
-                )}
-            </div>
-
-            <div className="h-20"></div>
+                </>
+            )}
+            <ChatWidget user={user} isAdmin={false} />
         </div>
     );
 };

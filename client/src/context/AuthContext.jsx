@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Persist login state on refresh
+    // Persist login state on refresh & Setup Interceptors
     useEffect(() => {
         const checkUserLoggedIn = async () => {
             try {
@@ -23,11 +23,38 @@ export const AuthProvider = ({ children }) => {
             }
         };
         checkUserLoggedIn();
+
+        // Axios Interceptor for Silent Refresh
+        const interceptor = axios.interceptors.response.use(
+            (response) => response,
+            async (error) => {
+                const originalRequest = error.config;
+                
+                // Avoid infinite loop if refresh itself fails
+                if (error.response?.status === 401 && !originalRequest._retry && originalRequest.url !== '/api/auth/refresh') {
+                    originalRequest._retry = true;
+                    try {
+                        await axios.post('/api/auth/refresh');
+                        // Retry original request
+                        return axios(originalRequest);
+                    } catch (err) {
+                        // Refresh failed - logout user
+                        setUser(null);
+                        return Promise.reject(err);
+                    }
+                }
+                return Promise.reject(error);
+            }
+        );
+
+        return () => {
+            axios.interceptors.response.eject(interceptor);
+        };
     }, []);
 
     const login = async (email, password) => {
         try {
-            const res = await axios.post('/api/auth/login', { email, password });
+            const res = await axios.post('/api/auth/login', { identifier: email, password });
             // Token is set in cookie by server
             setUser(res.data.user);
             return { success: true };

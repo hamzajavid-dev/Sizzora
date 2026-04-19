@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { FaStar, FaMinus, FaPlus } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
+import { getImageUrl } from '../utils/imageUtils';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -11,9 +12,6 @@ const ProductDetails = () => {
     const [quantity, setQuantity] = useState(1);
     const { addToCart } = useCart();
 
-    // Mock Data
-    const mockProduct = { _id: id, name: 'Classic Burger', category: 'Burgers', price: 12.99, description: 'Juicy beef patty with cheese, lettuce, tomato, and our secret sauce on a brioche bun.', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=1899&auto=format&fit=crop' };
-
     useEffect(() => {
         const fetchProduct = async () => {
             try {
@@ -21,7 +19,7 @@ const ProductDetails = () => {
                 setProduct(res.data);
             } catch (err) {
                 console.error(err);
-                setProduct(mockProduct);
+                // setProduct(null); // Explicitly set null to show Not Found
             } finally {
                 setLoading(false);
             }
@@ -37,7 +35,7 @@ const ProductDetails = () => {
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
                 {/* Image */}
                 <div className="rounded-xl overflow-hidden shadow-2xl h-[400px] md:h-[500px]">
-                    <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                    <img src={getImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover" />
                 </div>
 
                 {/* Content */}

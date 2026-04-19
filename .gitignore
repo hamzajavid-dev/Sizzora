@@ -3,3 +3,16 @@ node_modules
 client/node_modules
 client/dist
 .DS_Store
+.mcp.json
+.superpowers/
+client/.vscode/
+server/uploads/
+check_*.js
+debug_*.js
+reset_*.js
+verify_*.js
+seed_*.js
+server/check_*.js
+server/reset_*.js
+server/seed_*.js
+server/cleanup_*

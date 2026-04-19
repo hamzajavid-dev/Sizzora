@@ -34,73 +34,101 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-screen pt-20 flex items-center justify-center px-4">
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-secondary/20 backdrop-blur-sm p-8 rounded-2xl border border-secondary/30 w-full max-w-md shadow-2xl"
-            >
-                <h2 className="text-3xl font-bold text-accent mb-6 text-center">Create Account</h2>
-                {error && <div className="bg-red-500/20 border border-red-500 text-red-100 p-3 rounded-lg mb-4 text-sm text-center">{error}</div>}
+        <div className="min-h-screen pt-32 pb-24 flex items-center justify-center px-4 relative overflow-hidden">
+            {/* Background Elements */}
+            <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[100px] pointer-events-none"></div>
+            <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-gray-300 text-sm font-medium mb-1">Full Name</label>
+            <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="bg-stone-900/80 backdrop-blur-xl p-8 md:p-12 rounded-3xl border border-white/10 w-full max-w-lg shadow-2xl relative z-10"
+            >
+                <div className="text-center mb-10">
+                    <h2 className="text-5xl font-extrabold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-primary via-yellow-400 to-secondary drop-shadow-sm tracking-tight">
+                        JOIN THE ELITE
+                    </h2>
+                    <p className="text-gray-400 font-medium">Create your account and start your journey</p>
+                </div>
+
+                {error && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-red-500/10 border border-red-500/50 text-red-200 p-4 rounded-xl mb-6 text-sm text-center font-bold flex items-center justify-center gap-2"
+                    >
+                        <span>⚠️</span> {error}
+                    </motion.div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 ml-1 uppercase tracking-widest">Full Name</label>
                         <input
                             type="text"
                             name="name"
                             required
-                            className="w-full bg-stone-800 border border-secondary/50 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-accent transition-colors"
+                            className="w-full bg-stone-800/50 border border-stone-700 rounded-xl px-5 py-4 text-white placeholder-gray-500 font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 hover:bg-stone-800"
+                            placeholder="John Doe"
                             value={formData.name}
                             onChange={handleChange}
                         />
                     </div>
-                    <div>
-                        <label className="block text-gray-300 text-sm font-medium mb-1">Email Address</label>
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 ml-1 uppercase tracking-widest">Email Address</label>
                         <input
                             type="email"
                             name="email"
                             required
-                            className="w-full bg-stone-800 border border-secondary/50 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-accent transition-colors"
+                            className="w-full bg-stone-800/50 border border-stone-700 rounded-xl px-5 py-4 text-white placeholder-gray-500 font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 hover:bg-stone-800"
+                            placeholder="john@example.com"
                             value={formData.email}
                             onChange={handleChange}
                         />
                     </div>
-                    <div>
-                        <label className="block text-gray-300 text-sm font-medium mb-1">Phone Number</label>
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 ml-1 uppercase tracking-widest">Phone Number</label>
                         <input
                             type="tel"
                             name="phone"
                             required
-                            className="w-full bg-stone-800 border border-secondary/50 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-accent transition-colors"
+                            className="w-full bg-stone-800/50 border border-stone-700 rounded-xl px-5 py-4 text-white placeholder-gray-500 font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 hover:bg-stone-800"
+                            placeholder="+1 (555) 000-0000"
                             value={formData.phone}
                             onChange={handleChange}
                         />
                     </div>
-                    <div>
-                        <label className="block text-gray-300 text-sm font-medium mb-1">Password</label>
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-400 ml-1 uppercase tracking-widest">Password</label>
                         <input
                             type="password"
                             name="password"
                             required
-                            className="w-full bg-stone-800 border border-secondary/50 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-accent transition-colors"
+                            className="w-full bg-stone-800/50 border border-stone-700 rounded-xl px-5 py-4 text-white placeholder-gray-500 font-medium focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all duration-300 hover:bg-stone-800"
+                            placeholder="••••••••"
                             value={formData.password}
                             onChange={handleChange}
                         />
+                        <p className="text-[10px] text-gray-500 ml-1">Must be at least 8 chars, incl. 1 number & 1 uppercase.</p>
                     </div>
 
                     <button
                         type="submit"
-                        className="w-full bg-accent hover:bg-yellow-500 text-stone-900 font-bold py-3 rounded-lg transition-colors mt-2"
+                        className="w-full bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-stone-900 font-extrabold text-lg uppercase tracking-widest py-4 rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-xl hover:shadow-primary/20 mt-4 active:scale-95"
                     >
-                        Sign Up
+                        Create Account
                     </button>
                 </form>
 
-                <p className="mt-6 text-center text-gray-400">
-                    Already have an account?{' '}
-                    <Link to="/login" className="text-accent hover:underline">Log In</Link>
-                </p>
+                <div className="mt-8 text-center">
+                    <p className="text-gray-400">
+                        Already have an account?{' '}
+                        <Link to="/login" className="text-primary font-bold hover:text-white transition-colors">
+                            Log In Here
+                        </Link>
+                    </p>
+                </div>
             </motion.div>
         </div>
     );
