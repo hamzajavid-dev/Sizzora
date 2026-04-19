@@ -228,7 +228,9 @@ const ChatWidget = () => {
         setAiMessages(msgs); setIsAiTyping(true);
         try {
             const payload = { message: txt, sessionId: getSessionId() };
-            const r = await axios.post(N8N_CHATBOT_WEBHOOK, payload);
+            const r = await axios.post(N8N_CHATBOT_WEBHOOK, payload, {
+                withCredentials: false,
+            });
             const reply = r.data?.reply || r.data?.message || r.data?.output || (typeof r.data === 'string' ? r.data : null);
             setAiMessages([...msgs, { sender:'ai', content: reply || 'Got it!', createdAt:new Date() }]);
         } catch {
