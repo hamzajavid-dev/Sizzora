@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
 const auth = require('../middleware/auth');
-const { verifyAdmin } = auth; 
+const { verifyAdmin } = auth;
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const syncKnowledge = require('../utils/syncKnowledge');
 
 // Configure Multer Storage (shared config pattern)
 const storage = multer.diskStorage({
@@ -62,6 +63,7 @@ router.post('/', verifyAdmin, upload.single('image'), async (req, res) => {
         
         const category = new Category({ name, image: imagePath });
         await category.save();
+        syncKnowledge();
         res.status(201).json(category);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -77,6 +79,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
             { name, image },
             { new: true }
         );
+        syncKnowledge();
         res.json(category);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -87,6 +90,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
 router.delete('/:id', verifyAdmin, async (req, res) => {
     try {
         await Category.findByIdAndDelete(req.params.id);
+        syncKnowledge();
         res.json({ message: 'Category deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });

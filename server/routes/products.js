@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const auth = require('../middleware/auth');
-const { verifyAdmin } = auth; 
+const { verifyAdmin } = auth;
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const syncKnowledge = require('../utils/syncKnowledge');
 
 // Configure Multer Storage
 const storage = multer.diskStorage({
@@ -64,6 +65,7 @@ router.post('/', verifyAdmin, upload.single('image'), async (req, res) => {
         
         const product = new Product(productData);
         await product.save();
+        syncKnowledge();
         res.status(201).json(product);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -74,6 +76,7 @@ router.post('/', verifyAdmin, upload.single('image'), async (req, res) => {
 router.put('/:id', verifyAdmin, async (req, res) => {
     try {
         const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        syncKnowledge();
         res.json(product);
     } catch (err) {
         res.status(400).json({ error: err.message });
@@ -84,6 +87,7 @@ router.put('/:id', verifyAdmin, async (req, res) => {
 router.delete('/:id', verifyAdmin, async (req, res) => {
     try {
         await Product.findByIdAndDelete(req.params.id);
+        syncKnowledge();
         res.json({ message: 'Product deleted' });
     } catch (err) {
         res.status(500).json({ error: err.message });
