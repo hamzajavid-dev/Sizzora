@@ -13,7 +13,16 @@ const PORT = process.env.PORT || 5000;
 // Setup Socket.IO
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5178'],
+        origin: (origin, cb) => {
+            const allowed = [
+                'http://localhost:5173', 'http://localhost:5174',
+                'http://localhost:5175', 'http://localhost:5176', 'http://localhost:5178',
+                'https://sizzora.vercel.app',
+                ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+            ];
+            if (!origin || allowed.includes(origin)) return cb(null, true);
+            cb(new Error('Not allowed by CORS'));
+        },
         methods: ["GET", "POST", "PUT", "DELETE"],
         credentials: true
     }
@@ -81,8 +90,19 @@ app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
 const cookieParser = require('cookie-parser');
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://localhost:5175',
+    'http://localhost:5176',
+    'https://sizzora.vercel.app',
+    ...(process.env.CLIENT_URL ? [process.env.CLIENT_URL] : []),
+];
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175', 'http://localhost:5176'],
+    origin: (origin, cb) => {
+        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+        cb(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
