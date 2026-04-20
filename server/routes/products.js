@@ -44,6 +44,20 @@ router.get('/', async (req, res) => {
     }
 });
 
+// Chatbot menu lookup (public, read-only)
+router.get('/chatbot', async (req, res) => {
+    try {
+        const query = { inStock: true };
+        if (req.query.name) {
+            query.name = { $regex: req.query.name, $options: 'i' };
+        }
+        const products = await Product.find(query).select('_id name price category inStock').lean();
+        res.json(products);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Get single product (Public)
 router.get('/:id', async (req, res) => {
     try {
