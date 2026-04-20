@@ -227,7 +227,13 @@ const ChatWidget = () => {
         const msgs = [...aiMessages, { sender: isAdmin?'admin':'user', content:txt, createdAt:new Date() }];
         setAiMessages(msgs); setIsAiTyping(true);
         try {
-            const payload = { message: txt, sessionId: getSessionId() };
+            const payload = {
+                message: txt,
+                sessionId: user?.id || user?._id || getSessionId(),
+                userName: user?.name || 'Customer',
+                userPhone: user?.phone || '',
+                userAddress: user?.address || '',
+            };
             const r = await axios.post(N8N_CHATBOT_WEBHOOK, payload, {
                 withCredentials: false,
             });
