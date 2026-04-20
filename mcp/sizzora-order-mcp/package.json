@@ -1,0 +1,16 @@
+{
+  "name": "sizzora-order-mcp",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server that allows AI agents to search menu items and place orders in Sizzora.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  }
+}
