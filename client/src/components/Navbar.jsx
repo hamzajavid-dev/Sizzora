@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaBars, FaShoppingCart, FaTimes, FaUser } from 'react-icons/fa';
+import { FaBars, FaFire, FaShoppingCart, FaTimes, FaUser } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import logo from '../assets/SIZZORA.png';
 
 const Navbar = () => {
     const { cart } = useCart();
@@ -34,16 +33,12 @@ const Navbar = () => {
                         >
                             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/35 via-secondary/30 to-accent/35 ring-1 ring-primary/40 flex items-center justify-center">
                                 <div className="w-10 h-10 rounded-lg bg-black/35 backdrop-blur-sm flex items-center justify-center">
-                            <img
-                                src={logo}
-                                alt="Sizzora"
-                                        className="h-8 w-auto object-contain transform group-hover:scale-105 transition-transform duration-300"
-                            />
+                                    <FaFire className="text-primary text-lg transform group-hover:scale-110 transition-transform duration-300" />
                                 </div>
                             </div>
                             <div className="hidden sm:block leading-tight">
-                                <p className="text-white font-bold tracking-[0.18em] text-xs">SIZZORA</p>
-                                <p className="text-primary/90 text-[11px] font-semibold">Flame Kitchen</p>
+                                <p className="text-white text-[26px] leading-[0.95] font-semibold tracking-[0.08em] font-['Playfair_Display']">Sizzora</p>
+                                <p className="text-primary/90 text-[11px] font-semibold tracking-[0.18em] uppercase">Flame Kitchen</p>
                             </div>
                         </Link>
                     </div>
