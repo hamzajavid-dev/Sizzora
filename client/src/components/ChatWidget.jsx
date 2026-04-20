@@ -15,9 +15,9 @@ import sizzorLogo from '../assets/SIZZORA.png';
 
 /* ─── Size presets ─────────────────────────────────────────── */
 const SIZES = {
-    normal: { width: 380, height: 540 },
-    large:  { width: 500, height: 680 },
-    full:   { width: 700, height: 820 },
+    normal: { width: 380, height: 560 },
+    large:  { width: 520, height: 700 },
+    full:   { width: 760, height: 860 },
 };
 
 /* ─── Heat strings rising from the burger launcher ──────────── */
@@ -106,6 +106,12 @@ const typeBadge = (type) => ({
     suggestion: 'bg-amber-500/15  text-amber-400  border-amber-500/30',
 })[type] || 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30';
 
+const QUICK_AI_PROMPTS = [
+    'Show today\'s best deals',
+    'Recommend 2 spicy items',
+    'Help me place an order',
+];
+
 /* ═══════════════════════════════════════════════════════════════
    Main component
 ═══════════════════════════════════════════════════════════════ */
@@ -116,6 +122,8 @@ const ChatWidget = () => {
     const [isOpen,       setIsOpen]       = useState(false);
     const [isMinimized,  setIsMinimized]  = useState(false);
     const [sizeKey,      setSizeKey]      = useState('normal');
+    const [isFullscreen, setIsFullscreen] = useState(false);
+    const [dockSide,     setDockSide]     = useState('right');
     const [chats,        setChats]        = useState([]);
     const [selectedChat, setSelectedChat] = useState(null);
     const [message,      setMessage]      = useState('');
@@ -290,6 +298,32 @@ const ChatWidget = () => {
     if (!user || !portalRoot) return null;
 
     const visibleChats = chats.filter(c => isAdmin ? (activeTab==='active' ? !c.isArchived : c.isArchived) : true);
+    const baseOffset = 20;
+    const isRightDock = dockSide === 'right';
+    const windowStyle = isFullscreen
+        ? {
+            pointerEvents: 'auto',
+            position: 'fixed',
+            top: 18,
+            bottom: 18,
+            left: 18,
+            right: 18,
+            width: 'auto',
+            height: isMinimized ? 56 : 'auto',
+            transition: 'all 0.28s cubic-bezier(.4,0,.2,1)',
+            background: '#111118',
+        }
+        : {
+            pointerEvents: 'auto',
+            position: 'fixed',
+            bottom: baseOffset,
+            right: isRightDock ? baseOffset : 'auto',
+            left: isRightDock ? 'auto' : baseOffset,
+            width: `min(calc(100vw - 24px), ${size.width}px)`,
+            height: isMinimized ? 56 : `min(calc(100vh - 120px), ${size.height}px)`,
+            transition: 'all 0.28s cubic-bezier(.4,0,.2,1)',
+            background: '#111118',
+        };
 
     /* ── Typing dots ── */
     const TypingDots = ({ color = 'bg-stone-400' }) => (
@@ -307,22 +341,39 @@ const ChatWidget = () => {
                     <motion.div
                         key="launcher"
                         initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}} exit={{scale:0,opacity:0}}
-                        className="fixed bottom-6 right-6"
-                        style={{ pointerEvents:'auto', width:60, height:60 }}
+                        className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6"
+                        style={{ pointerEvents:'auto', width:72, height:72 }}
                     >
                         <HeatStrings />
+                        <motion.div
+                            aria-hidden
+                            className="absolute inset-0 rounded-2xl"
+                            style={{ background: 'radial-gradient(circle, rgba(247,68,7,0.45) 0%, rgba(247,68,7,0) 65%)' }}
+                            animate={{ scale: [1, 1.35, 1], opacity: [0.75, 0.2, 0.75] }}
+                            transition={{ duration: 2.2, repeat: Infinity }}
+                        />
                         <motion.button
-                            whileHover={{scale:1.08}} whileTap={{scale:0.93}}
+                            whileHover={{scale:1.08, rotate:-2}} whileTap={{scale:0.93}}
                             onClick={() => setIsOpen(true)}
-                            className="w-full h-full rounded-2xl shadow-2xl overflow-hidden ring-2 ring-amber-500/60 hover:ring-amber-400 transition-all relative"
+                            className="group w-full h-full rounded-2xl shadow-2xl overflow-hidden ring-2 ring-amber-500/70 hover:ring-amber-300 transition-all relative border border-white/30"
                         >
-                            <img src={sizzorLogo} alt="Sizzora" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(254,183,5,0.2),rgba(247,68,7,0.35),rgba(129,4,49,0.45))]" />
+                            <div className="absolute inset-[5px] rounded-xl bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                                <img src={sizzorLogo} alt="Sizzora" className="w-12 h-12 object-contain drop-shadow-[0_5px_10px_rgba(0,0,0,0.45)]" />
+                            </div>
                             {unreadCount > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow border border-stone-900">
                                     {unreadCount > 99 ? '99+' : unreadCount}
                                 </span>
                             )}
                         </motion.button>
+                        <motion.p
+                            className="absolute left-1/2 top-[calc(100%+10px)] -translate-x-1/2 text-[11px] font-semibold px-2.5 py-1 rounded-full text-amber-100 bg-black/55 border border-amber-500/35 whitespace-nowrap"
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                        >
+                            Ask Sizzora
+                        </motion.p>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -334,13 +385,7 @@ const ChatWidget = () => {
                         key="win"
                         initial={{opacity:0,scale:0.88,y:24}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.88,y:24}}
                         transition={{type:'spring',stiffness:380,damping:28}}
-                        style={{
-                            pointerEvents:'auto', position:'fixed', bottom:24, right:24,
-                            width: size.width,
-                            height: isMinimized ? 56 : size.height,
-                            transition:'width 0.3s cubic-bezier(.4,0,.2,1), height 0.3s cubic-bezier(.4,0,.2,1)',
-                            background:'#111118',
-                        }}
+                        style={windowStyle}
                         className="flex flex-col rounded-2xl shadow-[0_12px_60px_rgba(0,0,0,0.8)] border border-[#feb705]/20 overflow-hidden"
                     >
                         {/* ── Header — gold accent top border ── */}
@@ -349,8 +394,8 @@ const ChatWidget = () => {
                             {/* gold accent line at very top */}
                             <div className="absolute top-0 left-0 right-0 h-[2px]"
                                 style={{ background:'linear-gradient(90deg, transparent, #feb705, #f74407, transparent)' }} />
-                            <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 ring-1 ring-[#feb705]/40">
-                                <img src={sizzorLogo} alt="Sizzora" className="w-full h-full object-cover" />
+                            <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 ring-1 ring-[#feb705]/40 bg-black/30 flex items-center justify-center">
+                                <img src={sizzorLogo} alt="Sizzora" className="w-7 h-7 object-contain" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-white font-bold text-sm leading-tight truncate">
@@ -364,16 +409,34 @@ const ChatWidget = () => {
                             </div>
                             <div className="flex items-center gap-0.5 shrink-0">
                                 {!isMinimized && (
+                                    <button
+                                        onClick={() => setDockSide((s) => (s === 'right' ? 'left' : 'right'))}
+                                        title={isRightDock ? 'Dock left' : 'Dock right'}
+                                        className="w-7 h-7 hidden sm:flex items-center justify-center rounded-lg text-stone-600 hover:text-[#feb705] hover:bg-white/5 transition-all text-[10px] font-bold"
+                                    >
+                                        {isRightDock ? 'L' : 'R'}
+                                    </button>
+                                )}
+                                {!isMinimized && (
                                     <button onClick={cycleSize} title={sizeKey==='full'?'Shrink':'Expand'}
                                         className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-[#feb705] hover:bg-white/5 transition-all">
                                         {sizeKey==='full' ? <FaCompress size={11}/> : <FaExpand size={11}/>}
+                                    </button>
+                                )}
+                                {!isMinimized && (
+                                    <button
+                                        onClick={() => setIsFullscreen((prev) => !prev)}
+                                        title={isFullscreen ? 'Exit full screen' : 'Full screen'}
+                                        className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-[#feb705] hover:bg-white/5 transition-all"
+                                    >
+                                        {isFullscreen ? <FaCompress size={11} /> : <FaExpand size={11} />}
                                     </button>
                                 )}
                                 <button onClick={() => setIsMinimized(m=>!m)}
                                     className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-[#feb705] hover:bg-white/5 transition-all">
                                     <FaMinus size={11}/>
                                 </button>
-                                <button onClick={() => {setIsOpen(false);setSelectedChat(null);setIsMinimized(false);}}
+                                <button onClick={() => {setIsOpen(false);setSelectedChat(null);setIsMinimized(false);setIsFullscreen(false);}}
                                     className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-[#f74407] hover:bg-white/5 transition-all">
                                     <FaTimes size={13}/>
                                 </button>
@@ -474,6 +537,17 @@ const ChatWidget = () => {
 
                                         {/* AI input */}
                                         <div className="relative shrink-0 p-3 border-t" style={{ borderColor:'rgba(247,68,7,0.15)', background:'rgba(21,8,0,0.6)' }}>
+                                            <div className="flex flex-wrap gap-1.5 mb-2">
+                                                {QUICK_AI_PROMPTS.map((prompt) => (
+                                                    <button
+                                                        key={prompt}
+                                                        onClick={() => setMessage(prompt)}
+                                                        className="text-[10px] px-2 py-1 rounded-full border border-amber-500/30 text-amber-200 hover:text-white hover:border-amber-300 hover:bg-amber-500/15 transition-colors"
+                                                    >
+                                                        {prompt}
+                                                    </button>
+                                                ))}
+                                            </div>
                                             <div className="flex gap-2 items-center rounded-xl border px-3 py-1 transition-colors"
                                                 style={{ background:'#1e1208', borderColor:'rgba(247,68,7,0.25)' }}>
                                                 <input
@@ -497,18 +571,18 @@ const ChatWidget = () => {
                                     <div className="flex-1 overflow-y-auto p-2 space-y-1.5" style={{ background:'#111118' }}>
                                         {visibleChats.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-12">
-                                                <div className="w-14 h-14 rounded-2xl overflow-hidden ring-1 ring-stone-700 opacity-30">
-                                                    <img src={sizzorLogo} alt="" className="w-full h-full object-cover"/>
+                                                <div className="w-14 h-14 rounded-2xl overflow-hidden ring-1 ring-stone-700 opacity-50 bg-black/25 flex items-center justify-center">
+                                                    <img src={sizzorLogo} alt="" className="w-10 h-10 object-contain"/>
                                                 </div>
                                                 <p className="text-stone-500 text-sm">{isAdmin ? `No ${activeTab} chats.` : 'No chats available.'}</p>
                                             </div>
                                         ) : visibleChats.map(chat => (
-                                            <motion.div key={chat._id} whileHover={{x:3}} onClick={() => selectChat(chat)}
+                                            <motion.div key={chat._id} onClick={() => selectChat(chat)}
                                                 className="group flex items-start gap-2.5 p-3 rounded-xl cursor-pointer transition-all border"
                                                 style={{ background:'#1a1520', borderColor:'rgba(255,255,255,0.05)' }}
-                                                whileHover={{ borderColor:'rgba(254,183,5,0.3)', background:'#1f1825' }}>
-                                                <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 ring-1 ring-[#feb705]/30">
-                                                    <img src={sizzorLogo} alt="" className="w-full h-full object-cover"/>
+                                                whileHover={{ x: 3, borderColor:'rgba(254,183,5,0.3)', background:'#1f1825' }}>
+                                                <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 ring-1 ring-[#feb705]/30 bg-black/25 flex items-center justify-center">
+                                                    <img src={sizzorLogo} alt="" className="w-7 h-7 object-contain"/>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between gap-1 mb-0.5">
@@ -590,8 +664,8 @@ const ChatWidget = () => {
                                                 return (
                                                     <div key={i} className={`flex items-end gap-2 ${mine?'flex-row-reverse':''}`}>
                                                         {!mine && (
-                                                            <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 ring-1 ring-white/10">
-                                                                <img src={sizzorLogo} alt="" className="w-full h-full object-cover"/>
+                                                            <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 ring-1 ring-white/10 bg-black/20 flex items-center justify-center">
+                                                                <img src={sizzorLogo} alt="" className="w-5 h-5 object-contain"/>
                                                             </div>
                                                         )}
                                                         <div className="group relative max-w-[75%]">
@@ -616,8 +690,8 @@ const ChatWidget = () => {
                                             })}
                                             {isTyping && (
                                                 <div className="flex items-end gap-2">
-                                                    <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/10">
-                                                        <img src={sizzorLogo} alt="" className="w-full h-full object-cover"/>
+                                                    <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/10 bg-black/20 flex items-center justify-center">
+                                                        <img src={sizzorLogo} alt="" className="w-5 h-5 object-contain"/>
                                                     </div>
                                                     <div className="rounded-2xl rounded-bl-sm px-3 py-2.5"
                                                         style={{ background:'#1a1520', border:'1px solid rgba(255,255,255,0.07)' }}>

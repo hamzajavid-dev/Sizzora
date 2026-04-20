@@ -10,7 +10,47 @@ html {
 
 body {
     font-family: 'Lato', sans-serif;
-    @apply bg-stone-900 text-white antialiased;
+    @apply text-white antialiased;
+    background-color: #120f10;
+}
+
+#root {
+    min-height: 100vh;
+}
+
+.app-shell {
+    position: relative;
+    isolation: isolate;
+    background:
+        radial-gradient(circle at 12% 12%, rgba(254, 183, 5, 0.14), transparent 36%),
+        radial-gradient(circle at 82% 6%, rgba(129, 4, 49, 0.26), transparent 35%),
+        radial-gradient(circle at 50% 120%, rgba(247, 68, 7, 0.2), transparent 40%),
+        linear-gradient(180deg, #130d09 0%, #0f0d13 60%, #0b0a10 100%);
+}
+
+.app-shell::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.22;
+    z-index: -1;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 h1,

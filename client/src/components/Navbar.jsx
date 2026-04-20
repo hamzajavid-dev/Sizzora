@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaShoppingCart, FaUser } from 'react-icons/fa';
+import { FaBars, FaShoppingCart, FaTimes, FaUser } from 'react-icons/fa';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import logo from '../assets/SIZZORA.png';
@@ -9,65 +9,79 @@ const Navbar = () => {
     const { cart } = useCart();
     const { user } = useAuth();
     const location = useLocation();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
+    const navItems = ['Home', 'Menu', 'About', 'Contact'];
 
     const isActive = (path) => location.pathname === path;
 
+    useEffect(() => {
+        setIsMobileMenuOpen(false);
+    }, [location.pathname]);
+
     return (
-        <nav className="fixed w-full z-50 top-0 left-0 transition-all duration-300 shadow-xl">
-            {/* Gradient Background - Yellow to Orange */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary via-primary to-secondary">
-                <div className="absolute inset-0 bg-white/10 opacity-20 pointer-events-none"></div>
+        <nav className="fixed w-full z-50 top-0 left-0">
+            <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(10,10,12,0.95),rgba(28,15,6,0.92),rgba(65,16,8,0.9))] backdrop-blur-xl border-b border-primary/20 shadow-[0_12px_40px_rgba(0,0,0,0.45)]">
+                <div className="absolute inset-0 opacity-25 pointer-events-none bg-[radial-gradient(circle_at_10%_20%,rgba(254,183,5,0.35),transparent_45%),radial-gradient(circle_at_85%_0%,rgba(129,4,49,0.4),transparent_40%)]" />
             </div>
 
-            <div className="max-w-7xl mx-auto px-6 relative">
-                <div className="flex items-center justify-between h-24">
-                    {/* Logo Section */}
-                    <div className="flex-shrink-0 flex items-center">
-                        <Link to="/" className="flex items-center gap-3 group relative">
-                            {/* Logo with slight hover boost */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
+                <div className="flex items-center justify-between h-20">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <Link
+                            to="/"
+                            className="group flex items-center gap-3 rounded-2xl pl-2 pr-4 py-2 border border-primary/35 bg-white/[0.06] shadow-[0_8px_26px_rgba(0,0,0,0.35)] hover:border-primary/70 transition-all"
+                        >
+                            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/35 via-secondary/30 to-accent/35 ring-1 ring-primary/40 flex items-center justify-center">
+                                <div className="w-10 h-10 rounded-lg bg-black/35 backdrop-blur-sm flex items-center justify-center">
                             <img
                                 src={logo}
                                 alt="Sizzora"
-                                className="h-16 w-auto object-contain relative z-10 transform group-hover:scale-105 transition-transform duration-300 filter drop-shadow-sm"
+                                        className="h-8 w-auto object-contain transform group-hover:scale-105 transition-transform duration-300"
                             />
+                                </div>
+                            </div>
+                            <div className="hidden sm:block leading-tight">
+                                <p className="text-white font-bold tracking-[0.18em] text-xs">SIZZORA</p>
+                                <p className="text-primary/90 text-[11px] font-semibold">Flame Kitchen</p>
+                            </div>
                         </Link>
                     </div>
 
-                    {/* Desktop Navigation */}
-                    <div className="hidden md:flex items-center space-x-10">
-                        {['Home', 'Menu', 'About', 'Contact'].map((item) => {
+                    <div className="hidden md:flex items-center gap-2 rounded-2xl border border-white/10 bg-white/[0.03] px-2 py-2">
+                        {navItems.map((item) => {
                             const path = item === 'Home' ? '/' : `/${item.toLowerCase()}`;
                             const active = isActive(path);
                             return (
                                 <Link
                                     key={item}
                                     to={path}
-                                    className={`relative font-extrabold text-lg transition-colors py-2 group ${active ? 'text-white' : 'text-stone-900 hover:text-white'}`}
+                                    className={`px-4 py-2 rounded-xl text-sm font-semibold tracking-wide transition-all ${active
+                                        ? 'text-stone-950 bg-gradient-to-r from-primary to-secondary shadow-lg'
+                                        : 'text-stone-200 hover:text-white hover:bg-white/10'}`}
                                 >
                                     {item}
-                                    <span className={`absolute bottom-0 left-0 h-0.5 bg-white transition-all duration-300 ${active ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                                 </Link>
                             );
                         })}
                         {user && user.role === 'admin' && (
                             <Link
                                 to="/admin"
-                                className={`relative font-extrabold text-lg transition-colors py-2 group ${isActive('/admin') ? 'text-white' : 'text-stone-900 hover:text-white'}`}
+                                className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${isActive('/admin')
+                                    ? 'text-stone-950 bg-gradient-to-r from-primary to-secondary shadow-lg'
+                                    : 'text-stone-200 hover:text-white hover:bg-white/10'}`}
                             >
                                 Dashboard
-                                <span className={`absolute bottom-0 left-0 h-0.5 bg-white transition-all duration-300 ${isActive('/admin') ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
                             </Link>
                         )}
                     </div>
 
-                    {/* Icons Section */}
-                    <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-2 sm:gap-3">
                         <Link to="/cart" className="relative group">
-                            <div className="p-3 bg-white/20 hover:bg-white/40 rounded-full transition-colors backdrop-blur-sm border border-white/20 shadow-sm">
-                                <FaShoppingCart size={20} className="text-stone-900 group-hover:scale-110 transition-transform" />
+                            <div className="p-2.5 sm:p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-sm border border-white/20 shadow-sm">
+                                <FaShoppingCart size={18} className="text-white group-hover:scale-110 transition-transform" />
                                 {cartCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 bg-accent text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-md animate-pulse border border-white">
+                                    <span className="absolute -top-1 -right-1 bg-secondary text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1 flex items-center justify-center shadow-md border border-white/70">
                                         {cartCount}
                                     </span>
                                 )}
@@ -75,15 +89,59 @@ const Navbar = () => {
                         </Link>
 
                         <Link to={user ? "/account" : "/login"} className="group relative">
-                            <div className={`p-3 rounded-full transition-all border ${user ? 'bg-stone-900 text-primary border-stone-900' : 'bg-white/20 text-stone-900 border-white/20 hover:bg-white/40'}`}>
-                                <FaUser size={20} className="group-hover:scale-110 transition-transform" />
+                            <div className={`p-2.5 sm:p-3 rounded-xl transition-all border ${user
+                                ? 'bg-primary/95 text-stone-950 border-primary shadow-md'
+                                : 'bg-white/10 text-white border-white/20 hover:bg-white/20'}`}>
+                                <FaUser size={18} className="group-hover:scale-110 transition-transform" />
                             </div>
-                            {user && <span className="absolute top-12 right-0 bg-stone-900 text-xs text-primary px-3 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-primary/20">
-                                {user.name.split(' ')[0]}
-                            </span>}
+                            {user && (
+                                <span className="absolute top-11 right-0 bg-black/90 text-xs text-primary px-3 py-1.5 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-primary/20">
+                                    {user.name.split(' ')[0]}
+                                </span>
+                            )}
                         </Link>
+
+                        <button
+                            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+                            className="md:hidden w-10 h-10 rounded-xl bg-white/10 border border-white/20 text-white flex items-center justify-center"
+                            aria-label="Toggle menu"
+                        >
+                            {isMobileMenuOpen ? <FaTimes size={16} /> : <FaBars size={16} />}
+                        </button>
                     </div>
                 </div>
+
+                {isMobileMenuOpen && (
+                    <div className="md:hidden pb-4 animate-[fadeIn_0.25s_ease]">
+                        <div className="rounded-2xl border border-white/15 bg-black/35 backdrop-blur-xl p-3 space-y-2 shadow-2xl">
+                            {navItems.map((item) => {
+                                const path = item === 'Home' ? '/' : `/${item.toLowerCase()}`;
+                                const active = isActive(path);
+                                return (
+                                    <Link
+                                        key={item}
+                                        to={path}
+                                        className={`block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${active
+                                            ? 'bg-gradient-to-r from-primary to-secondary text-stone-950'
+                                            : 'text-stone-100 bg-white/[0.04] hover:bg-white/[0.1]'}`}
+                                    >
+                                        {item}
+                                    </Link>
+                                );
+                            })}
+                            {user && user.role === 'admin' && (
+                                <Link
+                                    to="/admin"
+                                    className={`block px-4 py-3 rounded-xl text-sm font-semibold transition-all ${isActive('/admin')
+                                        ? 'bg-gradient-to-r from-primary to-secondary text-stone-950'
+                                        : 'text-stone-100 bg-white/[0.04] hover:bg-white/[0.1]'}`}
+                                >
+                                    Dashboard
+                                </Link>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </nav>
     );

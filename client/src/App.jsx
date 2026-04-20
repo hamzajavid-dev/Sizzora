@@ -65,7 +65,7 @@ function App() {
             <CartProvider>
                 <Router>
                     <ScrollToTop />
-                    <div className="bg-stone-900 min-h-screen font-sans flex flex-col">
+                    <div className="app-shell min-h-screen font-sans flex flex-col">
                         <Navbar />
                         <main className="flex-grow">
                             <ErrorBoundary>
