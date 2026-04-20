@@ -28,6 +28,34 @@ const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 const { verifyAdmin } = auth;
 
+// Chatbot order creation (server-to-server, secured with shared secret)
+router.post('/chatbot', async (req, res) => {
+    const secret = req.headers['x-chatbot-secret'];
+    if (!secret || secret !== process.env.CHATBOT_SECRET) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    try {
+        const { userId, items, totalAmount, shippingAddress, customerName, phoneNumber } = req.body;
+        if (!items || !items.length || !totalAmount || !shippingAddress || !customerName || !phoneNumber) {
+            return res.status(400).json({ error: 'Missing required order fields' });
+        }
+        const order = new Order({
+            user: userId || 'guest',
+            items,
+            totalAmount,
+            shippingAddress,
+            customerName,
+            phoneNumber,
+            paymentMethod: 'Payment Proof',
+            status: 'pending'
+        });
+        await order.save();
+        res.status(201).json({ orderId: order._id, totalAmount: order.totalAmount });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // Create Order (with Image Upload)
 router.post('/', upload.single('paymentProofImage'), async (req, res) => {
     try {
