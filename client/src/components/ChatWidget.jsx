@@ -116,26 +116,30 @@ const QUICK_AI_PROMPTS = [
     'I want to place an order',
 ];
 
-const MOCK_MENU = [
-    { name: 'Smoky Zinger Burger', price: 599 },
-    { name: 'Peri Peri Fries', price: 349 },
-    { name: 'Grilled Chicken Wrap', price: 549 },
-    { name: 'BBQ Pizza Slice', price: 699 },
-];
-
-const BrandGlyph = ({ size = 28, rounded = 'rounded-full', small = false }) => (
+const BrandTextMark = ({ size = 28, rounded = 'rounded-full' }) => (
     <div
-        className={`${rounded} flex items-center justify-center text-white font-bold ring-1 ring-amber-300/30 shadow-[0_6px_14px_rgba(0,0,0,0.35)] ${small ? 'text-[10px]' : 'text-sm'}`}
+        className={`${rounded} flex items-center justify-center text-white font-semibold ring-1 ring-amber-300/30 shadow-[0_6px_14px_rgba(0,0,0,0.35)] px-3`}
         style={{
-            width: size,
+            minWidth: size,
             height: size,
             background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #7c2d12 100%)',
             fontFamily: 'Playfair Display, serif',
-            letterSpacing: '0.03em',
+            letterSpacing: '0.04em',
         }}
     >
-        SZ
+        Sizzora
     </div>
+);
+
+const BrandDot = ({ size = 22 }) => (
+    <div
+        className="rounded-full ring-1 ring-amber-300/30 shadow-[0_4px_10px_rgba(0,0,0,0.3)]"
+        style={{
+            width: size,
+            height: size,
+            background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 55%, #7c2d12 100%)',
+        }}
+    />
 );
 
 /* ═══════════════════════════════════════════════════════════════
@@ -170,7 +174,6 @@ const ChatWidget = () => {
     const typingTimeout   = useRef(null);
     const socketRef       = useRef(null);
     const resizeStateRef  = useRef(null);
-    const mockFlowRef     = useRef({ step: 'idle', draft: {} });
     const [portalRoot,    setPortalRoot]  = useState(null);
 
     const size = SIZES[sizeKey];
@@ -260,106 +263,7 @@ const ChatWidget = () => {
         return gid;
     };
 
-    const getMockAiReply = (input) => {
-        const text = input.toLowerCase().trim();
-        const flow = mockFlowRef.current;
-
-        const findQty = (keywords) => {
-            for (const word of keywords) {
-                const match = text.match(new RegExp(`(\\d+)\\s*(x\\s*)?${word}`));
-                if (match) return Number(match[1]);
-            }
-            return 1;
-        };
-
-        const resolveItems = () => {
-            const items = [];
-            if (text.includes('burger') || text.includes('zinger')) {
-                items.push({ name: 'Smoky Zinger Burger', qty: findQty(['burger', 'zinger']), price: 599 });
-            }
-            if (text.includes('fries')) {
-                items.push({ name: 'Peri Peri Fries', qty: findQty(['fries']), price: 349 });
-            }
-            if (text.includes('wrap')) {
-                items.push({ name: 'Grilled Chicken Wrap', qty: findQty(['wrap']), price: 549 });
-            }
-            if (text.includes('pizza')) {
-                items.push({ name: 'BBQ Pizza Slice', qty: findQty(['pizza']), price: 699 });
-            }
-            return items;
-        };
-
-        const menuText = MOCK_MENU.map((m, i) => `${i + 1}. ${m.name} - Rs.${m.price}`).join('\n');
-
-        if (/(place an order|want to order|order now|order food|help me place an order)/.test(text) && flow.step === 'idle') {
-            flow.step = 'awaitingItems';
-            flow.draft = {};
-            return `Perfect, let's place your order.\n\nToday's quick menu:\n${menuText}\n\nReply with item names + quantity, for example: \"2 burgers and 1 fries\".`;
-        }
-
-        if (flow.step === 'awaitingItems') {
-            const items = resolveItems();
-            if (!items.length) {
-                return 'I did not catch the items yet. Please tell me what you want from this list: burger, fries, wrap, or pizza.';
-            }
-
-            flow.draft.items = items;
-            flow.draft.total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            flow.step = 'awaitingAddress';
-
-            const summary = items.map((item) => `- ${item.qty} x ${item.name} (Rs.${item.price * item.qty})`).join('\n');
-            return `Great choice. Here is your cart:\n${summary}\n\nSubtotal: Rs.${flow.draft.total}\n\nPlease send your delivery address (and phone number if possible).`;
-        }
-
-        if (flow.step === 'awaitingAddress') {
-            if (text.length < 8) {
-                return 'Please send a complete delivery address so I can confirm the order.';
-            }
-
-            const phoneMatch = input.match(/\b\d{10,13}\b/);
-            flow.draft.address = input.trim();
-            flow.draft.phone = phoneMatch ? phoneMatch[0] : 'Not provided';
-            flow.step = 'awaitingPayment';
-
-            return `Got it.\nAddress: ${flow.draft.address}\nPhone: ${flow.draft.phone}\n\nHow would you like to pay: Cash on Delivery or Online Payment?`;
-        }
-
-        if (flow.step === 'awaitingPayment') {
-            if (!/(cash|cod|online|card|jazzcash|easypaisa)/.test(text)) {
-                return 'Please choose one payment method: Cash on Delivery or Online Payment.';
-            }
-
-            const orderId = `SZ${Math.floor(10000 + Math.random() * 90000)}`;
-            const method = /(cash|cod)/.test(text) ? 'Cash on Delivery' : 'Online Payment';
-            flow.draft.orderId = orderId;
-            flow.draft.payment = method;
-            flow.step = 'confirmed';
-
-            return `Order confirmed.\n\nOrder ID: ${orderId}\nPayment: ${method}\nAmount: Rs.${flow.draft.total}\nEstimated delivery: 35-45 minutes\n\nYou can ask: \"Track my order\" anytime.`;
-        }
-
-        if (flow.step === 'confirmed') {
-            if (/(track|status|where|arrive)/.test(text)) {
-                return `Update for ${flow.draft.orderId}: your order is being prepared and should leave our kitchen in 10 minutes.`;
-            }
-            if (/(new order|another order|start again)/.test(text)) {
-                flow.step = 'idle';
-                flow.draft = {};
-                return 'Sure, starting a fresh order. Say: "I want to place an order".';
-            }
-            return 'Your fake order is active for demo. Ask "Track my order" or say "new order" to start again.';
-        }
-
-        if (/(deal|offer|discount)/.test(text)) {
-            return 'Today\'s deal: Buy 1 Smoky Zinger Burger and get Peri Peri Fries at 50% off.';
-        }
-
-        if (/(menu|recommend)/.test(text)) {
-            return `Here are popular picks:\n${menuText}\n\nSay: \"I want to place an order\" to start checkout.`;
-        }
-
-        return 'I am running in demo mode right now. Try: "I want to place an order".';
-    };
+    const N8N_CHATBOT_WEBHOOK = import.meta.env.VITE_N8N_CHATBOT_WEBHOOK || '';
 
     const sendAiMsg = async () => {
         if (!message.trim()) return;
@@ -367,12 +271,25 @@ const ChatWidget = () => {
         const msgs = [...aiMessages, { sender: isAdmin?'admin':'user', content:txt, createdAt:new Date() }];
         setAiMessages(msgs); setIsAiTyping(true);
         try {
-            getSessionId();
-            await new Promise((resolve) => setTimeout(resolve, 650));
-            const reply = getMockAiReply(txt);
-            setAiMessages([...msgs, { sender:'ai', content: reply, createdAt:new Date() }]);
-        } catch {
-            setAiMessages([...msgs, { sender:'ai', content:"Sorry, I'm having trouble right now. Try again in a moment!", createdAt:new Date() }]);
+            if (!N8N_CHATBOT_WEBHOOK) {
+                setAiMessages([...msgs, { sender:'ai', content:'Chatbot webhook is not configured yet. Please set VITE_N8N_CHATBOT_WEBHOOK.', createdAt:new Date() }]);
+                return;
+            }
+
+            const payload = {
+                message: txt,
+                sessionId: user?.id || user?._id || getSessionId(),
+                userName: user?.name || 'Customer',
+                userPhone: user?.phone || '',
+                userAddress: user?.address || '',
+            };
+
+            const r = await axios.post(N8N_CHATBOT_WEBHOOK, payload, { withCredentials: false });
+            const reply = r.data?.reply || r.data?.message || r.data?.output || (typeof r.data === 'string' ? r.data : null);
+            setAiMessages([...msgs, { sender:'ai', content: reply || 'Got it!', createdAt:new Date() }]);
+        } catch (error) {
+            const fallback = error?.response?.data?.message || error?.response?.data?.error || "Sorry, I'm having trouble right now. Try again in a moment!";
+            setAiMessages([...msgs, { sender:'ai', content: fallback, createdAt:new Date() }]);
         } finally { setIsAiTyping(false); }
     };
 
@@ -548,7 +465,7 @@ const ChatWidget = () => {
                         >
                             <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(254,183,5,0.2),rgba(247,68,7,0.35),rgba(129,4,49,0.45))]" />
                             <div className="absolute inset-[5px] rounded-xl bg-black/30 backdrop-blur-sm flex items-center justify-center">
-                                <BrandGlyph size={46} rounded="rounded-xl" />
+                                <BrandTextMark size={46} rounded="rounded-xl" />
                             </div>
                             {unreadCount > 0 && (
                                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow border border-stone-900">
@@ -584,7 +501,7 @@ const ChatWidget = () => {
                             <div className="absolute top-0 left-0 right-0 h-[2px]"
                                 style={{ background:'linear-gradient(90deg, transparent, #feb705, #f74407, transparent)' }} />
                             <div className="shrink-0">
-                                <BrandGlyph size={36} rounded="rounded-xl" small />
+                                <BrandTextMark size={36} rounded="rounded-xl" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-white font-bold text-sm leading-tight truncate">
@@ -761,7 +678,7 @@ const ChatWidget = () => {
                                         {visibleChats.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-12">
                                                 <div className="w-14 h-14 rounded-2xl overflow-hidden ring-1 ring-stone-700 opacity-50 bg-black/25 flex items-center justify-center">
-                                                    <BrandGlyph size={40} rounded="rounded-xl" small />
+                                                    <BrandTextMark size={40} rounded="rounded-xl" />
                                                 </div>
                                                 <p className="text-stone-500 text-sm">{isAdmin ? `No ${activeTab} chats.` : 'No chats available.'}</p>
                                             </div>
@@ -771,7 +688,7 @@ const ChatWidget = () => {
                                                 style={{ background:'#1a1520', borderColor:'rgba(255,255,255,0.05)' }}
                                                 whileHover={{ x: 3, borderColor:'rgba(254,183,5,0.3)', background:'#1f1825' }}>
                                                 <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 ring-1 ring-[#feb705]/30 bg-black/25 flex items-center justify-center">
-                                                    <BrandGlyph size={28} rounded="rounded-lg" small />
+                                                    <BrandDot size={22} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between gap-1 mb-0.5">
@@ -854,7 +771,7 @@ const ChatWidget = () => {
                                                     <div key={i} className={`flex items-end gap-2 ${mine?'flex-row-reverse':''}`}>
                                                         {!mine && (
                                                             <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 ring-1 ring-white/10 bg-black/20 flex items-center justify-center">
-                                                                <BrandGlyph size={22} small />
+                                                                <BrandDot size={14} />
                                                             </div>
                                                         )}
                                                         <div className="group relative max-w-[75%]">
@@ -880,7 +797,7 @@ const ChatWidget = () => {
                                             {isTyping && (
                                                 <div className="flex items-end gap-2">
                                                     <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-white/10 bg-black/20 flex items-center justify-center">
-                                                        <BrandGlyph size={22} small />
+                                                        <BrandDot size={14} />
                                                     </div>
                                                     <div className="rounded-2xl rounded-bl-sm px-3 py-2.5"
                                                         style={{ background:'#1a1520', border:'1px solid rgba(255,255,255,0.07)' }}>
