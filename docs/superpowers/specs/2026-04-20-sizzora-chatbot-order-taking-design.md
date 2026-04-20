@@ -44,7 +44,7 @@ The chatbot must be rebuilt to reliably answer FAQs **and** take orders end-to-e
 Customer (logged-in) types message
         ↓
 ChatWidget → POST /webhook/sizzora-chat
-    body: { message: string, sessionId: user._id }
+    body: { message: string, sessionId: user.id, userName: user.name, userPhone: user.phone, userAddress: user.address }
         ↓
 n8n: Intent Classifier LLM
     → intent: "faq" | "order_action" | "cart_view" | "checkout"
@@ -80,7 +80,7 @@ Respond to Webhook { reply: "..." }
 | Node | Type | Purpose |
 |---|---|---|
 | Webhook Trigger | Webhook | Receives POST at `/sizzora-chat` |
-| Set Variables | Set | Extract `message`, `sessionId` from body |
+| Set Variables | Set | Extract `message`, `sessionId`, `userName`, `userPhone`, `userAddress` from body |
 | Intent Classifier | LLM Chain | Returns `{ intent }` |
 | Switch | Switch | Routes by intent value |
 | Knowledge Base Tool | Supabase Vector Store | RAG for FAQ path |
@@ -144,13 +144,15 @@ Reply with ONLY valid JSON. No explanation. No markdown.
 ```sql
 -- Cart session per user
 CREATE TABLE carts (
-  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id   text NOT NULL UNIQUE,  -- = user._id from MongoDB
-  status       text NOT NULL DEFAULT 'active',  -- 'active' | 'checked_out'
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id       text NOT NULL UNIQUE,  -- = user._id from MongoDB
+  customer_name    text,
+  phone_number     text,
+  status           text NOT NULL DEFAULT 'active',  -- 'active' | 'checked_out'
   fulfillment_type text,              -- 'delivery' | 'pickup'
-  address      text,
-  created_at   timestamptz DEFAULT now(),
-  updated_at   timestamptz DEFAULT now()
+  address          text,
+  created_at       timestamptz DEFAULT now(),
+  updated_at       timestamptz DEFAULT now()
 );
 
 -- Items in cart
@@ -196,8 +198,8 @@ Response: [{ _id, name, price, inStock, category }]
      "items": [{ "product": "<product_id>", "quantity": 2, "price": 12.99 }],
      "totalAmount": 25.98,
      "shippingAddress": "<address or 'Pickup'>",
-     "customerName": "<from cart session>",
-     "phoneNumber": "<from cart session>",
+     "customerName": "<cart.customer_name (from webhook userName)>",
+     "phoneNumber": "<cart.phone_number (from webhook userPhone)>",
      "paymentMethod": "Payment Proof"
    }
    ```
@@ -212,6 +214,8 @@ Response: [{ _id, name, price, inStock, category }]
 | Scenario | n8n Response |
 |---|---|
 | Item not found in DB | "Sorry, I couldn't find [item] on our menu. Try browsing the menu page or ask me what's available." |
+| Multiple items match | List matching items by name + price, ask "Which one did you mean?" |
+| Phone number empty at checkout | "What's your phone number for the order?" — store in cart before proceeding |
 | Item out of stock | "[item] is currently out of stock. Can I suggest something else?" |
 | Empty cart at checkout | "Your cart is empty. Add some items first!" |
 | Missing address for delivery | "Please provide your delivery address before checking out." |
@@ -224,9 +228,23 @@ Response: [{ _id, name, price, inStock, category }]
 
 **File:** `client/src/components/ChatWidget.jsx`
 
-Current issue: `withCredentials: false` is correct but response parsing checks `r.data?.reply || r.data?.message || r.data?.output` — this works if n8n returns `{ reply: "..." }`.
+One change required — the webhook payload must include user context fields so n8n can populate the cart and order without additional API calls:
 
-No UI changes required. Env var `VITE_N8N_CHATBOT_WEBHOOK` must be set in Vercel to the production webhook URL.
+```js
+// Before
+const payload = { message: txt, sessionId: getSessionId() };
+
+// After
+const payload = {
+  message: txt,
+  sessionId: user.id,
+  userName: user.name,
+  userPhone: user.phone || '',
+  userAddress: user.address || '',
+};
+```
+
+Response parsing (`r.data?.reply`) is correct and unchanged. Env var `VITE_N8N_CHATBOT_WEBHOOK` must be set in Vercel to the production webhook URL.
 
 ---
 
