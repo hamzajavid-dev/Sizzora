@@ -293,7 +293,7 @@ router.delete('/:chatId', verifyAdmin, async (req, res) => {
 
 // AI chatbot proxy — forwards to n8n to avoid browser CORS restrictions
 router.post('/ai', async (req, res) => {
-    const N8N_WEBHOOK = process.env.N8N_CHATBOT_WEBHOOK || 'https://n8n-ztpf.onrender.com/webhook-test/3aab88c3-0b5c-4a7a-ae1d-7af31352e599';
+    const N8N_WEBHOOK = process.env.N8N_CHATBOT_WEBHOOK || 'https://n8n-ztpf.onrender.com/webhook/3aab88c3-0b5c-4a7a-ae1d-7af31352e599';
     try {
         const https = require('https');
         const body = JSON.stringify(req.body);
