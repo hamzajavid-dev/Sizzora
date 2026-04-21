@@ -263,19 +263,12 @@ const ChatWidget = () => {
         return gid;
     };
 
-    const N8N_CHATBOT_WEBHOOK = import.meta.env.VITE_N8N_CHATBOT_WEBHOOK || '';
-
     const sendAiMsg = async () => {
         if (!message.trim()) return;
         const txt = message; setMessage('');
         const msgs = [...aiMessages, { sender: isAdmin?'admin':'user', content:txt, createdAt:new Date() }];
         setAiMessages(msgs); setIsAiTyping(true);
         try {
-            if (!N8N_CHATBOT_WEBHOOK) {
-                setAiMessages([...msgs, { sender:'ai', content:'Chatbot webhook is not configured yet. Please set VITE_N8N_CHATBOT_WEBHOOK.', createdAt:new Date() }]);
-                return;
-            }
-
             const payload = {
                 message: txt,
                 sessionId: user?.id || user?._id || getSessionId(),
@@ -284,8 +277,8 @@ const ChatWidget = () => {
                 userAddress: user?.address || '',
             };
 
-            const r = await axios.post(N8N_CHATBOT_WEBHOOK, payload, { withCredentials: false });
-            const reply = r.data?.reply || r.data?.message || r.data?.output || (typeof r.data === 'string' ? r.data : null);
+            const r = await axios.post('/api/chat/ai', payload);
+            const reply = r.data?.reply || r.data?.message || r.data?.output || r.data?.text || (typeof r.data === 'string' ? r.data : null);
             setAiMessages([...msgs, { sender:'ai', content: reply || 'Got it!', createdAt:new Date() }]);
         } catch (error) {
             const fallback = error?.response?.data?.message || error?.response?.data?.error || "Sorry, I'm having trouble right now. Try again in a moment!";

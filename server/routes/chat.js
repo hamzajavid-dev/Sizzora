@@ -291,4 +291,40 @@ router.delete('/:chatId', verifyAdmin, async (req, res) => {
     }
 });
 
+// AI chatbot proxy — forwards to n8n to avoid browser CORS restrictions
+router.post('/ai', async (req, res) => {
+    const N8N_WEBHOOK = process.env.N8N_CHATBOT_WEBHOOK || 'https://n8n-ztpf.onrender.com/webhook-test/3aab88c3-0b5c-4a7a-ae1d-7af31352e599';
+    try {
+        const https = require('https');
+        const body = JSON.stringify(req.body);
+        const url = new URL(N8N_WEBHOOK);
+
+        const data = await new Promise((resolve, reject) => {
+            const options = {
+                hostname: url.hostname,
+                path: url.pathname,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Content-Length': Buffer.byteLength(body),
+                },
+            };
+            const request = https.request(options, (response) => {
+                let raw = '';
+                response.on('data', chunk => raw += chunk);
+                response.on('end', () => {
+                    try { resolve(JSON.parse(raw)); } catch { resolve(raw); }
+                });
+            });
+            request.on('error', reject);
+            request.write(body);
+            request.end();
+        });
+
+        res.json(data);
+    } catch (err) {
+        res.status(502).json({ error: 'AI service unavailable', details: err.message });
+    }
+});
+
 module.exports = router;
