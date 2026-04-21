@@ -40,6 +40,31 @@ npm start
 
 This runs as a stdio MCP server and is intended to be launched by an MCP-compatible client.
 
+## Deploy On Vercel (HTTP MCP)
+
+This repo also includes a Vercel-compatible MCP HTTP endpoint at `/mcp`.
+
+1. Set Vercel project environment variables:
+
+```env
+SIZZORA_API_BASE_URL=https://your-backend-domain.com
+SIZZORA_CHATBOT_SECRET=replace-with-your-chatbot-secret
+```
+
+2. Deploy:
+
+```bash
+npx vercel --prod
+```
+
+3. After deployment, your MCP endpoint will be:
+
+```text
+https://<your-vercel-domain>/mcp
+```
+
+You can connect MCP clients that support Streamable HTTP transport to this URL.
+
 ## Example Tool Input
 
 ### `search_menu`
