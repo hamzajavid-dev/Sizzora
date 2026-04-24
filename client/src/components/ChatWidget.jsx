@@ -605,9 +605,8 @@ const ChatWidget = () => {
                         key="win"
                         initial={{opacity:0,scale:0.88,y:24}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.88,y:24}}
                         transition={{type:'spring',stiffness:380,damping:28}}
-                        style={windowStyle}
+                        style={{ ...windowStyle, backdropFilter:'blur(2px)' }}
                         className="flex flex-col rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_0_1px_rgba(254,183,5,0.12)] overflow-hidden"
-                        style={{ backdropFilter:'blur(2px)' }}
                     >
                         {/* ── Header ── */}
                         <div className="shrink-0 relative flex items-center gap-2.5 px-3 py-2.5 border-b border-[#feb705]/10"
