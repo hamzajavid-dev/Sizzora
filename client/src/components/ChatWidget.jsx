@@ -257,9 +257,16 @@ const ChatWidget = () => {
 
     /* handlers */
     const getSessionId = () => {
-        if (user?._id) return user._id;
-        let gid = sessionStorage.getItem('sizzora_ai_session');
-        if (!gid) { gid = 'guest-' + Math.random().toString(36).slice(2); sessionStorage.setItem('sizzora_ai_session', gid); }
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+        if (user?._id) return `${user._id}-${today}`;
+        const key = 'sizzora_ai_session';
+        const stored = localStorage.getItem(key);
+        if (stored) {
+            const [id, date] = stored.split('|');
+            if (date === today) return id;
+        }
+        const gid = 'guest-' + Math.random().toString(36).slice(2);
+        localStorage.setItem(key, `${gid}|${today}`);
         return gid;
     };
 
