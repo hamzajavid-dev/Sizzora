@@ -106,7 +106,7 @@ const AiOrb = ({ size = 28, thinking = false }) => {
                 transition={{ duration:2, repeat:Infinity }}
             />
             <motion.div className="relative w-full h-full rounded-full flex items-center justify-center shadow-[0_0_18px_rgba(247,68,7,0.6)]"
-                style={{ background:'linear-gradient(135deg, #feb705 0%, #f74407 60%, #810431 100%)' }}
+                style={{ background:'linear-gradient(145deg,#f59e0b 0%,#d97706 60%,#92400e 100%)' }}
                 animate={thinking ? { scale:[1,1.1,1] } : {}}
                 transition={{ duration:0.6, repeat:thinking ? Infinity : 0 }}>
                 {thinking
@@ -160,7 +160,7 @@ const formatAiResponse = (text) => {
             return (
                 <div key={i} className="flex items-start gap-2 py-0.5">
                     <span className="mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold text-stone-900"
-                        style={{ background: 'linear-gradient(135deg,#feb705,#f74407)' }}>{num}</span>
+                        style={{ background: 'linear-gradient(135deg,#f59e0b,#d97706)' }}>{num}</span>
                     <span>{rest}</span>
                 </div>
             );
@@ -186,29 +186,20 @@ const formatAiResponse = (text) => {
     });
 };
 
-const BrandTextMark = ({ size = 28, rounded = 'rounded-full' }) => (
+/* Flame icon mark used in header and chat list */
+const BrandMark = ({ size = 32 }) => (
     <div
-        className={`${rounded} flex items-center justify-center text-white font-semibold ring-1 ring-amber-300/30 shadow-[0_6px_14px_rgba(0,0,0,0.35)] px-3`}
-        style={{
-            minWidth: size,
-            height: size,
-            background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 50%, #7c2d12 100%)',
-            fontFamily: 'Playfair Display, serif',
-            letterSpacing: '0.04em',
-        }}
+        className="rounded-xl flex items-center justify-center shrink-0 shadow-[0_4px_14px_rgba(245,158,11,0.35)]"
+        style={{ width: size, height: size, background: 'linear-gradient(145deg,#1c1008 0%,#2a1200 100%)', border: '1px solid rgba(245,158,11,0.25)' }}
     >
-        Sizzora
+        <span style={{ fontSize: size * 0.52, lineHeight: 1 }}>🔥</span>
     </div>
 );
 
 const BrandDot = ({ size = 22 }) => (
     <div
-        className="rounded-full ring-1 ring-amber-300/30 shadow-[0_4px_10px_rgba(0,0,0,0.3)]"
-        style={{
-            width: size,
-            height: size,
-            background: 'linear-gradient(135deg, #fbbf24 0%, #f97316 55%, #7c2d12 100%)',
-        }}
+        className="rounded-full ring-1 ring-amber-400/30 shadow-[0_2px_8px_rgba(0,0,0,0.4)]"
+        style={{ width: size, height: size, background: 'linear-gradient(135deg,#f59e0b 0%,#d97706 100%)' }}
     />
 );
 
@@ -337,7 +328,7 @@ const ChatWidget = () => {
     /* handlers */
     const getSessionId = () => {
         const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
-        if (user?._id) return `${user._id}-${today}`;
+        if (user?.id) return `${user.id}-${today}`;
         const key = 'sizzora_ai_session';
         const stored = localStorage.getItem(key);
         if (stored) {
@@ -574,7 +565,7 @@ const ChatWidget = () => {
                             whileHover={{scale:1.1}} whileTap={{scale:0.92}}
                             onClick={() => setIsOpen(true)}
                             className="relative w-full h-full rounded-full shadow-[0_8px_32px_rgba(247,68,7,0.5)] overflow-hidden border-2 border-amber-400/60"
-                            style={{ background:'linear-gradient(135deg,#feb705 0%,#f74407 55%,#810431 100%)' }}
+                            style={{ background:'linear-gradient(145deg,#f59e0b 0%,#d97706 60%,#92400e 100%)' }}
                         >
                             <div className="absolute inset-0 flex items-center justify-center">
                                 <span className="text-2xl select-none" title="Sizzora AI">🍔</span>
@@ -606,30 +597,27 @@ const ChatWidget = () => {
                         initial={{opacity:0,scale:0.88,y:24}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.88,y:24}}
                         transition={{type:'spring',stiffness:380,damping:28}}
                         style={{ ...windowStyle, backdropFilter:'blur(2px)' }}
-                        className="flex flex-col rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_0_1px_rgba(254,183,5,0.12)] overflow-hidden"
+                        className="flex flex-col rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.9),0_0_0_1px_rgba(245,158,11,0.14)] overflow-hidden"
                     >
                         {/* ── Header ── */}
-                        <div className="shrink-0 relative flex items-center gap-2.5 px-3 py-2.5 border-b border-[#feb705]/10"
-                            style={{ background:'linear-gradient(135deg,#130c04 0%,#150e14 100%)' }}>
-                            {/* gold shimmer top border */}
-                            <div className="absolute top-0 left-0 right-0 h-[2px]"
-                                style={{ background:'linear-gradient(90deg, transparent 0%, #feb705 35%, #f74407 65%, transparent 100%)' }} />
-                            <div className="shrink-0">
-                                <BrandTextMark size={34} rounded="rounded-xl" />
-                            </div>
+                        <div className="shrink-0 relative flex items-center gap-2.5 px-3 py-2.5 border-b"
+                            style={{ background:'#13100a', borderColor:'rgba(245,158,11,0.12)' }}>
+                            <div className="absolute top-0 left-0 right-0 h-[1.5px]"
+                                style={{ background:'linear-gradient(90deg, transparent 5%, #f59e0b 40%, #d97706 60%, transparent 95%)' }} />
+                            <BrandMark size={34} />
                             <div className="flex-1 min-w-0">
-                                <p className="text-white font-bold text-sm leading-tight truncate">
-                                    {selectedChat ? selectedChat.chatTitle : isAdmin ? 'Support Inbox' : activeTab === 'ai' ? 'Food Concierge' : 'Sizzora Support'}
+                                <p className="text-white font-bold text-sm leading-tight truncate tracking-wide">
+                                    {selectedChat ? selectedChat.chatTitle : isAdmin ? 'Support Inbox' : activeTab === 'ai' ? 'Sizzora AI' : 'Sizzora Support'}
                                 </p>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                     {activeTab === 'ai' && !selectedChat ? (
                                         <>
-                                            <motion.div className="w-1.5 h-1.5 bg-green-400 rounded-full"
+                                            <motion.div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"
                                                 animate={{ opacity:[1,0.3,1] }} transition={{ duration:1.6, repeat:Infinity }}/>
-                                            <p className="text-[10px] text-green-400/80">Online · Powered by AI</p>
+                                            <p className="text-[10px] text-emerald-400/70">Online · AI powered</p>
                                         </>
                                     ) : (
-                                        <p className="text-[10px]" style={{ color:'#feb70580' }}>
+                                        <p className="text-[10px] text-amber-500/60">
                                             {selectedChat ? (selectedChat.isBlocked ? '🔴 Blocked' : '🟢 Active') : "We're here to help"}
                                         </p>
                                     )}
@@ -640,14 +628,14 @@ const ChatWidget = () => {
                                     <button
                                         onClick={() => setDockSide((s) => (s === 'right' ? 'left' : 'right'))}
                                         title={isRightDock ? 'Dock left' : 'Dock right'}
-                                        className="w-7 h-7 hidden sm:flex items-center justify-center rounded-lg text-stone-600 hover:text-[#feb705] hover:bg-white/5 transition-all text-[10px] font-bold"
+                                        className="w-7 h-7 hidden sm:flex items-center justify-center rounded-lg text-stone-600 hover:text-amber-400 hover:bg-white/5 transition-all text-[10px] font-bold"
                                     >
                                         {isRightDock ? 'L' : 'R'}
                                     </button>
                                 )}
                                 {!isMinimized && (
                                     <button onClick={cycleSize} title={sizeKey==='full'?'Shrink':'Expand'}
-                                        className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-[#feb705] hover:bg-white/5 transition-all">
+                                        className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-amber-400 hover:bg-white/5 transition-all">
                                         {sizeKey==='full' ? <FaCompress size={11}/> : <FaExpand size={11}/>}
                                     </button>
                                 )}
@@ -655,13 +643,13 @@ const ChatWidget = () => {
                                     <button
                                         onClick={() => setIsFullscreen((prev) => !prev)}
                                         title={isFullscreen ? 'Exit full screen' : 'Full screen'}
-                                        className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-[#feb705] hover:bg-white/5 transition-all"
+                                        className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-amber-400 hover:bg-white/5 transition-all"
                                     >
                                         {isFullscreen ? <FaCompress size={11} /> : <FaExpand size={11} />}
                                     </button>
                                 )}
                                 <button onClick={() => setIsMinimized(m=>!m)}
-                                    className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-[#feb705] hover:bg-white/5 transition-all">
+                                    className="w-7 h-7 flex items-center justify-center rounded-lg text-stone-600 hover:text-amber-400 hover:bg-white/5 transition-all">
                                     <FaMinus size={11}/>
                                 </button>
                                 <button onClick={() => {setIsOpen(false);setSelectedChat(null);setIsMinimized(false);setIsFullscreen(false);}}
@@ -680,19 +668,19 @@ const ChatWidget = () => {
                                         style={{ background:'#0e0d11' }}>
                                         <button onClick={() => setActiveTab('active')}
                                             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab==='active' ? 'text-stone-900' : 'text-stone-500 hover:text-white hover:bg-white/5'}`}
-                                            style={activeTab==='active' ? { background:'linear-gradient(135deg,#feb705,#f74407)' } : {}}>
+                                            style={activeTab==='active' ? { background:'linear-gradient(135deg,#f59e0b,#d97706)' } : {}}>
                                             <FaHeadset size={11}/> {isAdmin ? 'Active' : 'Support'}
                                         </button>
                                         {isAdmin && (
                                             <button onClick={() => setActiveTab('archived')}
                                                 className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab==='archived' ? 'text-stone-900' : 'text-stone-500 hover:text-white hover:bg-white/5'}`}
-                                                style={activeTab==='archived' ? { background:'linear-gradient(135deg,#feb705,#f74407)' } : {}}>
+                                                style={activeTab==='archived' ? { background:'linear-gradient(135deg,#f59e0b,#d97706)' } : {}}>
                                                 <FaArchive size={10}/> Archived
                                             </button>
                                         )}
                                         <button onClick={() => setActiveTab('ai')}
                                             className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${activeTab==='ai' ? 'text-white' : 'text-stone-500 hover:text-white hover:bg-white/5'}`}
-                                            style={activeTab==='ai' ? { background:'linear-gradient(135deg,#810431,#f74407)' } : {}}>
+                                            style={activeTab==='ai' ? { background:'linear-gradient(135deg,#92400e,#d97706)' } : {}}>
                                             <RiSparklingFill size={13}/> AI Chat
                                         </button>
                                     </div>
@@ -700,15 +688,12 @@ const ChatWidget = () => {
 
                                 {/* ══ AI CHAT ══ */}
                                 {!selectedChat && activeTab==='ai' ? (
-                                    <div className="flex flex-col flex-1 min-h-0 relative" style={{ background:'#0f0804' }}>
-                                        {/* warm ember background */}
-                                        <div className="absolute inset-0 pointer-events-none"
-                                            style={{ background:'radial-gradient(ellipse at 50% 0%, rgba(247,68,7,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(254,183,5,0.05) 0%, transparent 50%)' }} />
+                                    <div className="flex flex-col flex-1 min-h-0 relative" style={{ background:'#0e0c09' }}>
                                         <Sparkles />
 
                                         {/* AI hero banner */}
                                         <div className="relative shrink-0 flex items-center gap-3 px-4 py-3 border-b"
-                                            style={{ borderColor:'rgba(247,68,7,0.2)', background:'linear-gradient(135deg,#150a00 0%,#1a0e10 100%)' }}>
+                                            style={{ borderColor:'rgba(245,158,11,0.12)', background:'#13100a' }}>
                                             <AiOrb size={42} thinking={isAiTyping} />
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5">
@@ -728,7 +713,7 @@ const ChatWidget = () => {
                                         </div>
 
                                         {/* Mode tabs */}
-                                        <div className="shrink-0 flex gap-1 px-2 py-1.5 border-b" style={{ background:'#0e0a04', borderColor:'rgba(247,68,7,0.12)' }}>
+                                        <div className="shrink-0 flex gap-1 px-2 py-1.5 border-b" style={{ background:'#100e0a', borderColor:'rgba(245,158,11,0.1)' }}>
                                             {AI_MODES.map(m => {
                                                 const Icon = m.icon;
                                                 const active = aiMode === m.id;
@@ -736,7 +721,7 @@ const ChatWidget = () => {
                                                     <button key={m.id} onClick={() => { setAiMode(m.id); setMessage(active ? message : ''); }}
                                                         title={m.hint}
                                                         className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-lg text-[10px] font-semibold transition-all ${active ? 'text-stone-900' : 'text-stone-500 hover:text-amber-300 hover:bg-white/5'}`}
-                                                        style={active ? { background:'linear-gradient(135deg,#feb705,#f74407)' } : {}}>
+                                                        style={active ? { background:'linear-gradient(135deg,#f59e0b,#d97706)' } : {}}>
                                                         <Icon size={9}/>{m.label}
                                                     </button>
                                                 );
@@ -758,7 +743,7 @@ const ChatWidget = () => {
                                                             whileTap={{scale:0.98}}
                                                             className={`max-w-[78%] rounded-2xl text-sm shadow-md ${mine ? 'rounded-br-sm font-medium text-stone-900' : 'rounded-bl-sm text-stone-100'}`}
                                                             style={mine
-                                                                ? { background:'linear-gradient(135deg,#feb705,#f74407)', padding:'10px 14px' }
+                                                                ? { background:'linear-gradient(135deg,#f59e0b,#d97706)', padding:'10px 14px' }
                                                                 : { background:'rgba(30,18,8,0.92)', border:'1px solid rgba(247,68,7,0.18)', padding:'10px 14px', backdropFilter:'blur(4px)' }}>
                                                             {msg.imagePreview && (
                                                                 <img src={msg.imagePreview} alt="attachment" className="mb-2 rounded-xl max-h-36 object-cover w-full ring-1 ring-amber-500/30"/>
@@ -786,7 +771,7 @@ const ChatWidget = () => {
                                         </div>
 
                                         {/* AI input */}
-                                        <div className="relative shrink-0 p-3 border-t" style={{ borderColor:'rgba(247,68,7,0.12)', background:'rgba(12,6,0,0.85)', backdropFilter:'blur(8px)' }}>
+                                        <div className="relative shrink-0 p-3 border-t" style={{ borderColor:'rgba(245,158,11,0.12)', background:'rgba(13,10,6,0.95)', backdropFilter:'blur(8px)' }}>
                                             {/* Quick action chips */}
                                             <div className="flex gap-1.5 mb-2.5 overflow-x-auto pb-0.5 scrollbar-hide" style={{ scrollbarWidth:'none' }}>
                                                 {QUICK_AI_PROMPTS.map((prompt) => (
@@ -816,7 +801,7 @@ const ChatWidget = () => {
                                                 </div>
                                             )}
                                             <div className="flex gap-2 items-center rounded-2xl border px-3 py-1.5 transition-colors"
-                                                style={{ background:'rgba(20,10,0,0.9)', borderColor:'rgba(247,68,7,0.3)', boxShadow:'0 2px 12px rgba(247,68,7,0.08)' }}>
+                                                style={{ background:'rgba(20,15,6,0.95)', borderColor:'rgba(245,158,11,0.25)', boxShadow:'0 2px 10px rgba(0,0,0,0.4)' }}>
                                                 <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden"/>
                                                 <motion.button
                                                     whileHover={{scale:1.15}} whileTap={{scale:0.9}}
@@ -832,14 +817,14 @@ const ChatWidget = () => {
                                                         onKeyPress={e=>e.key==='Enter'&&sendAiMsg()}
                                                         placeholder={PLACEHOLDER_CYCLE[placeholderIdx]}
                                                         className="flex-1 bg-transparent text-white text-sm py-1.5 outline-none placeholder-stone-600"
-                                                        style={{ caretColor:'#feb705' }}
+                                                        style={{ caretColor:'#f59e0b' }}
                                                     />
                                                 </AnimatePresence>
                                                 <motion.button
                                                     whileHover={{scale:1.08}} whileTap={{scale:0.92}}
                                                     onClick={sendAiMsg} disabled={!message.trim() && !aiImage}
                                                     className="w-8 h-8 flex items-center justify-center rounded-xl text-stone-900 transition-all disabled:opacity-35 disabled:cursor-not-allowed shadow shrink-0"
-                                                    style={{ background:'linear-gradient(135deg,#feb705,#f74407)' }}>
+                                                    style={{ background:'linear-gradient(135deg,#f59e0b,#d97706)' }}>
                                                     <FaPaperPlane size={12}/>
                                                 </motion.button>
                                             </div>
@@ -852,7 +837,7 @@ const ChatWidget = () => {
                                         {visibleChats.length === 0 ? (
                                             <div className="flex flex-col items-center justify-center h-full gap-3 text-center py-12">
                                                 <div className="w-14 h-14 rounded-2xl overflow-hidden ring-1 ring-stone-700 opacity-50 bg-black/25 flex items-center justify-center">
-                                                    <BrandTextMark size={40} rounded="rounded-xl" />
+                                                    <BrandMark size={40} />
                                                 </div>
                                                 <p className="text-stone-500 text-sm">{isAdmin ? `No ${activeTab} chats.` : 'No chats available.'}</p>
                                             </div>
@@ -861,15 +846,15 @@ const ChatWidget = () => {
                                                 className="group flex items-start gap-2.5 p-3 rounded-xl cursor-pointer transition-all border"
                                                 style={{ background:'#1a1520', borderColor:'rgba(255,255,255,0.05)' }}
                                                 whileHover={{ x: 3, borderColor:'rgba(254,183,5,0.3)', background:'#1f1825' }}>
-                                                <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 ring-1 ring-[#feb705]/30 bg-black/25 flex items-center justify-center">
-                                                    <BrandDot size={22} />
+                                                <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 ring-1 ring-amber-500/20 bg-[#1a1208] flex items-center justify-center">
+                                                    <span className="text-base">🔥</span>
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between gap-1 mb-0.5">
                                                         <p className="text-white font-semibold text-sm truncate">{chat.chatTitle}</p>
                                                         {((isAdmin&&chat.unreadAdminCount>0)||(!isAdmin&&chat.unreadUserCount>0)) && (
                                                             <span className="text-stone-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-                                                                style={{ background:'linear-gradient(135deg,#feb705,#f74407)' }}>
+                                                                style={{ background:'linear-gradient(135deg,#f59e0b,#d97706)' }}>
                                                                 {isAdmin ? chat.unreadAdminCount : chat.unreadUserCount}
                                                             </span>
                                                         )}
@@ -951,7 +936,7 @@ const ChatWidget = () => {
                                                         <div className="group relative max-w-[75%]">
                                                             <div className={`px-3 py-2 rounded-2xl text-sm shadow ${mine ? 'rounded-br-sm font-medium text-stone-900' : 'rounded-bl-sm text-stone-100'}`}
                                                                 style={mine
-                                                                    ? { background:'linear-gradient(135deg,#feb705,#f74407)' }
+                                                                    ? { background:'linear-gradient(135deg,#f59e0b,#d97706)' }
                                                                     : { background:'#1a1520', border:'1px solid rgba(255,255,255,0.07)' }}>
                                                                 <p className="leading-relaxed">{msg.message}</p>
                                                                 <p className={`text-[10px] mt-1 ${mine?'text-stone-700':'text-stone-500'}`}>
@@ -993,11 +978,11 @@ const ChatWidget = () => {
                                                     placeholder={selectedChat.isBlocked&&!isAdmin ? 'Messaging disabled' : 'Type a message…'}
                                                     disabled={selectedChat.isBlocked&&!isAdmin}
                                                     className="flex-1 bg-transparent text-white text-sm py-2 outline-none placeholder-stone-600 disabled:cursor-not-allowed"
-                                                    style={{ caretColor:'#feb705' }}
+                                                    style={{ caretColor:'#f59e0b' }}
                                                 />
                                                 <button onClick={sendMsg} disabled={(selectedChat.isBlocked&&!isAdmin)||!message.trim()}
                                                     className="w-8 h-8 flex items-center justify-center rounded-lg text-stone-900 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow shrink-0"
-                                                    style={{ background:'linear-gradient(135deg,#feb705,#f74407)' }}>
+                                                    style={{ background:'linear-gradient(135deg,#f59e0b,#d97706)' }}>
                                                     <FaPaperPlane size={12}/>
                                                 </button>
                                             </div>
