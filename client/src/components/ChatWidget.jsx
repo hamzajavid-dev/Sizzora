@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaTimes, FaPaperPlane, FaTrash, FaChevronLeft,
     FaHeadset, FaArchive, FaExpand, FaCompress, FaMinus, FaImage,
+    FaCompass, FaShoppingCart, FaTag, FaMotorcycle,
 } from 'react-icons/fa';
 import { MdSupportAgent } from 'react-icons/md';
 import { RiRobot2Fill, RiSparklingFill } from 'react-icons/ri';
@@ -89,19 +90,33 @@ const Sparkles = () => (
 );
 
 /* ─── Fiery AI avatar orb ────────────────────────────────────── */
-const AiOrb = ({ size = 28 }) => (
-    <div className="relative shrink-0 flex items-center justify-center" style={{ width: size, height: size }}>
-        <motion.div className="absolute rounded-full"
-            style={{ inset:-7, background:'radial-gradient(circle, rgba(247,68,7,0.55) 0%, rgba(254,183,5,0.2) 60%, transparent 80%)', filter:'blur(7px)' }}
-            animate={{ scale:[1,1.5,1], opacity:[0.55,1,0.55] }}
-            transition={{ duration:2, repeat:Infinity }}
-        />
-        <div className="relative w-full h-full rounded-full flex items-center justify-center shadow-[0_0_18px_rgba(247,68,7,0.6)]"
-            style={{ background:'linear-gradient(135deg, #feb705 0%, #f74407 60%, #810431 100%)' }}>
-            <RiRobot2Fill size={size * 0.52} className="text-white drop-shadow" />
+const FOOD_EMOJIS = ['🍕','🍔','🍟','🌮','🍗'];
+const AiOrb = ({ size = 28, thinking = false }) => {
+    const [emojiIdx, setEmojiIdx] = useState(0);
+    useEffect(() => {
+        if (!thinking) return;
+        const t = setInterval(() => setEmojiIdx(i => (i+1) % FOOD_EMOJIS.length), 600);
+        return () => clearInterval(t);
+    }, [thinking]);
+    return (
+        <div className="relative shrink-0 flex items-center justify-center" style={{ width: size, height: size }}>
+            <motion.div className="absolute rounded-full"
+                style={{ inset:-7, background:'radial-gradient(circle, rgba(247,68,7,0.55) 0%, rgba(254,183,5,0.2) 60%, transparent 80%)', filter:'blur(7px)' }}
+                animate={{ scale:[1,1.5,1], opacity:[0.55,1,0.55] }}
+                transition={{ duration:2, repeat:Infinity }}
+            />
+            <motion.div className="relative w-full h-full rounded-full flex items-center justify-center shadow-[0_0_18px_rgba(247,68,7,0.6)]"
+                style={{ background:'linear-gradient(135deg, #feb705 0%, #f74407 60%, #810431 100%)' }}
+                animate={thinking ? { scale:[1,1.1,1] } : {}}
+                transition={{ duration:0.6, repeat:thinking ? Infinity : 0 }}>
+                {thinking
+                    ? <span style={{ fontSize: size * 0.52, lineHeight: 1 }}>{FOOD_EMOJIS[emojiIdx]}</span>
+                    : <RiRobot2Fill size={size * 0.52} className="text-white drop-shadow" />
+                }
+            </motion.div>
         </div>
-    </div>
-);
+    );
+};
 
 /* ─── Chat type badge colour map ────────────────────────────── */
 const typeBadge = (type) => ({
@@ -110,11 +125,66 @@ const typeBadge = (type) => ({
     suggestion: 'bg-amber-500/15  text-amber-400  border-amber-500/30',
 })[type] || 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30';
 
-const QUICK_AI_PROMPTS = [
-    'Show today\'s best deals',
-    'Recommend 2 spicy items',
-    'I want to place an order',
+const AI_MODES = [
+    { id: 'explore', label: 'Explore',   icon: FaCompass,      hint: 'Discover what\'s on the menu today' },
+    { id: 'order',   label: 'Order',     icon: FaShoppingCart, hint: 'Place an order in seconds' },
+    { id: 'deals',   label: 'Deals',     icon: FaTag,          hint: 'Best value combos & offers' },
+    { id: 'track',   label: 'Track',     icon: FaMotorcycle,   hint: 'Check on your active order' },
 ];
+
+const QUICK_AI_PROMPTS = [
+    { label: '🔥 Best deals today',        text: 'Show me today\'s best deals' },
+    { label: '🍔 Burgers under budget',    text: 'Show me all burger options' },
+    { label: '🌶 Spicy picks',             text: 'Recommend 2 spicy items' },
+    { label: '⚡ Quick combos',            text: 'What combo deals do you have?' },
+    { label: '🛒 Place an order',          text: 'I want to place an order' },
+];
+
+const PLACEHOLDER_CYCLE = [
+    'What are you craving? 🍔',
+    'Ask for a meal under budget…',
+    'Try: spicy pizza deals 🍕',
+    'Looking for something sweet? 🍩',
+    'Show me today\'s specials…',
+];
+
+/* ── Formats raw n8n/AI text into structured readable output ── */
+const formatAiResponse = (text) => {
+    if (!text) return null;
+    const lines = text.split('\n').filter(l => l.trim());
+    return lines.map((line, i) => {
+        const trimmed = line.trim();
+        // Numbered list item: "1. Something"
+        if (/^\d+\.\s/.test(trimmed)) {
+            const [, num, rest] = trimmed.match(/^(\d+)\.\s(.+)$/);
+            return (
+                <div key={i} className="flex items-start gap-2 py-0.5">
+                    <span className="mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center text-[10px] font-bold text-stone-900"
+                        style={{ background: 'linear-gradient(135deg,#feb705,#f74407)' }}>{num}</span>
+                    <span>{rest}</span>
+                </div>
+            );
+        }
+        // Bullet "- item" or "• item"
+        if (/^[-•]\s/.test(trimmed)) {
+            return (
+                <div key={i} className="flex items-start gap-2 py-0.5">
+                    <span className="mt-1.5 w-1.5 h-1.5 shrink-0 rounded-full bg-orange-400"/>
+                    <span>{trimmed.replace(/^[-•]\s/, '')}</span>
+                </div>
+            );
+        }
+        // Bold header "**text**"
+        if (/^\*\*.+\*\*$/.test(trimmed)) {
+            return <p key={i} className="font-bold text-amber-300 mt-1">{trimmed.replace(/\*\*/g, '')}</p>;
+        }
+        // Separator "---"
+        if (/^---+$/.test(trimmed)) {
+            return <hr key={i} className="border-orange-900/40 my-1"/>;
+        }
+        return <p key={i} className="py-0.5 leading-relaxed">{trimmed}</p>;
+    });
+};
 
 const BrandTextMark = ({ size = 28, rounded = 'rounded-full' }) => (
     <div
@@ -170,6 +240,8 @@ const ChatWidget = () => {
     const [isAiTyping,   setIsAiTyping]   = useState(false);
     const [isTyping,     setIsTyping]     = useState(false);
     const [aiImage,      setAiImage]      = useState(null); // { preview, url } after upload
+    const [aiMode,       setAiMode]       = useState('explore');
+    const [placeholderIdx, setPlaceholderIdx] = useState(0);
 
     const messagesEndRef  = useRef(null);
     const typingTimeout   = useRef(null);
@@ -256,6 +328,11 @@ const ChatWidget = () => {
     }, [user, isAdmin]);
 
     useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior:'smooth' }); }, [selectedChat?.messages, aiMessages]);
+
+    useEffect(() => {
+        const t = setInterval(() => setPlaceholderIdx(i => (i+1) % PLACEHOLDER_CYCLE.length), 3200);
+        return () => clearInterval(t);
+    }, []);
 
     /* handlers */
     const getSessionId = () => {
@@ -466,44 +543,56 @@ const ChatWidget = () => {
     const content = (
         <div style={{pointerEvents:'none', position:'fixed', inset:0}}>
 
-            {/* ── Launcher ─────────────────────────────────────── */}
+            {/* ── Launcher — Living Assistant Orb ─────────────── */}
             <AnimatePresence>
                 {!isOpen && showBtn && (
                     <motion.div
                         key="launcher"
                         initial={{scale:0,opacity:0}} animate={{scale:1,opacity:1}} exit={{scale:0,opacity:0}}
+                        transition={{type:'spring',stiffness:400,damping:22}}
                         className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6"
-                        style={{ pointerEvents:'auto', width:72, height:72 }}
+                        style={{ pointerEvents:'auto', width:68, height:68 }}
                     >
                         <HeatStrings />
+                        {/* breathing glow ring */}
                         <motion.div
                             aria-hidden
-                            className="absolute inset-0 rounded-2xl"
-                            style={{ background: 'radial-gradient(circle, rgba(247,68,7,0.45) 0%, rgba(247,68,7,0) 65%)' }}
-                            animate={{ scale: [1, 1.35, 1], opacity: [0.75, 0.2, 0.75] }}
-                            transition={{ duration: 2.2, repeat: Infinity }}
+                            className="absolute rounded-full"
+                            style={{ inset:-10, background:'radial-gradient(circle, rgba(247,68,7,0.38) 0%, rgba(254,183,5,0.18) 55%, transparent 75%)', filter:'blur(8px)' }}
+                            animate={{ scale:[1,1.4,1], opacity:[0.6,0.15,0.6] }}
+                            transition={{ duration:2.8, repeat:Infinity, ease:'easeInOut' }}
+                        />
+                        {/* second ring offset */}
+                        <motion.div
+                            aria-hidden
+                            className="absolute rounded-full"
+                            style={{ inset:-4, background:'transparent', border:'1.5px solid rgba(254,183,5,0.35)' }}
+                            animate={{ scale:[1,1.2,1], opacity:[0.5,0,0.5] }}
+                            transition={{ duration:2.8, repeat:Infinity, ease:'easeInOut', delay:0.4 }}
                         />
                         <motion.button
-                            whileHover={{scale:1.08, rotate:-2}} whileTap={{scale:0.93}}
+                            whileHover={{scale:1.1}} whileTap={{scale:0.92}}
                             onClick={() => setIsOpen(true)}
-                            className="group w-full h-full rounded-2xl shadow-2xl overflow-hidden ring-2 ring-amber-500/70 hover:ring-amber-300 transition-all relative border border-white/30"
+                            className="relative w-full h-full rounded-full shadow-[0_8px_32px_rgba(247,68,7,0.5)] overflow-hidden border-2 border-amber-400/60"
+                            style={{ background:'linear-gradient(135deg,#feb705 0%,#f74407 55%,#810431 100%)' }}
                         >
-                            <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(254,183,5,0.2),rgba(247,68,7,0.35),rgba(129,4,49,0.45))]" />
-                            <div className="absolute inset-[5px] rounded-xl bg-black/30 backdrop-blur-sm flex items-center justify-center">
-                                <BrandTextMark size={46} rounded="rounded-xl" />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="text-2xl select-none" title="Sizzora AI">🍔</span>
                             </div>
                             {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow border border-stone-900">
+                                <motion.span
+                                    initial={{scale:0}} animate={{scale:1}}
+                                    className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[20px] h-5 flex items-center justify-center px-1 shadow border-2 border-stone-900">
                                     {unreadCount > 99 ? '99+' : unreadCount}
-                                </span>
+                                </motion.span>
                             )}
                         </motion.button>
                         <motion.p
-                            className="absolute left-1/2 top-[calc(100%+10px)] -translate-x-1/2 text-[11px] font-semibold px-2.5 py-1 rounded-full text-amber-100 bg-black/55 border border-amber-500/35 whitespace-nowrap"
-                            initial={{ opacity: 0, y: 4 }}
-                            animate={{ opacity: 1, y: 0 }}
+                            className="absolute left-1/2 top-[calc(100%+8px)] -translate-x-1/2 text-[11px] font-semibold px-2.5 py-1 rounded-full text-amber-100 whitespace-nowrap"
+                            style={{ background:'rgba(15,8,0,0.75)', border:'1px solid rgba(254,183,5,0.3)', backdropFilter:'blur(6px)' }}
+                            initial={{ opacity:0, y:4 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.3 }}
                         >
-                            Ask Sizzora
+                            Food Concierge ✨
                         </motion.p>
                     </motion.div>
                 )}
@@ -517,26 +606,35 @@ const ChatWidget = () => {
                         initial={{opacity:0,scale:0.88,y:24}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.88,y:24}}
                         transition={{type:'spring',stiffness:380,damping:28}}
                         style={windowStyle}
-                        className="flex flex-col rounded-2xl shadow-[0_12px_60px_rgba(0,0,0,0.8)] border border-[#feb705]/20 overflow-hidden"
+                        className="flex flex-col rounded-3xl shadow-[0_24px_80px_rgba(0,0,0,0.85),0_0_0_1px_rgba(254,183,5,0.12)] overflow-hidden"
+                        style={{ backdropFilter:'blur(2px)' }}
                     >
-                        {/* ── Header — gold accent top border ── */}
-                        <div className="shrink-0 relative flex items-center gap-2.5 px-3 py-2 border-b border-[#feb705]/15"
-                            style={{ background:'linear-gradient(135deg,#18120a 0%,#1a1118 100%)' }}>
-                            {/* gold accent line at very top */}
+                        {/* ── Header ── */}
+                        <div className="shrink-0 relative flex items-center gap-2.5 px-3 py-2.5 border-b border-[#feb705]/10"
+                            style={{ background:'linear-gradient(135deg,#130c04 0%,#150e14 100%)' }}>
+                            {/* gold shimmer top border */}
                             <div className="absolute top-0 left-0 right-0 h-[2px]"
-                                style={{ background:'linear-gradient(90deg, transparent, #feb705, #f74407, transparent)' }} />
+                                style={{ background:'linear-gradient(90deg, transparent 0%, #feb705 35%, #f74407 65%, transparent 100%)' }} />
                             <div className="shrink-0">
-                                <BrandTextMark size={36} rounded="rounded-xl" />
+                                <BrandTextMark size={34} rounded="rounded-xl" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-white font-bold text-sm leading-tight truncate">
-                                    {selectedChat ? selectedChat.chatTitle : isAdmin ? 'Support Inbox' : 'Sizzora Support'}
+                                    {selectedChat ? selectedChat.chatTitle : isAdmin ? 'Support Inbox' : activeTab === 'ai' ? 'Food Concierge' : 'Sizzora Support'}
                                 </p>
-                                <p className="text-[11px] leading-tight" style={{ color:'#feb70599' }}>
-                                    {selectedChat
-                                        ? (selectedChat.isBlocked ? '🔴 Blocked' : '🟢 Active')
-                                        : activeTab === 'ai' ? '🔥 AI powered' : "We're here to help"}
-                                </p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                    {activeTab === 'ai' && !selectedChat ? (
+                                        <>
+                                            <motion.div className="w-1.5 h-1.5 bg-green-400 rounded-full"
+                                                animate={{ opacity:[1,0.3,1] }} transition={{ duration:1.6, repeat:Infinity }}/>
+                                            <p className="text-[10px] text-green-400/80">Online · Powered by AI</p>
+                                        </>
+                                    ) : (
+                                        <p className="text-[10px]" style={{ color:'#feb70580' }}>
+                                            {selectedChat ? (selectedChat.isBlocked ? '🔴 Blocked' : '🟢 Active') : "We're here to help"}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                             <div className="flex items-center gap-0.5 shrink-0">
                                 {!isMinimized && (
@@ -603,66 +701,85 @@ const ChatWidget = () => {
 
                                 {/* ══ AI CHAT ══ */}
                                 {!selectedChat && activeTab==='ai' ? (
-                                    <div className="flex flex-col flex-1 min-h-0 relative">
+                                    <div className="flex flex-col flex-1 min-h-0 relative" style={{ background:'#0f0804' }}>
                                         {/* warm ember background */}
                                         <div className="absolute inset-0 pointer-events-none"
-                                            style={{ background:'linear-gradient(180deg,#150800 0%,#110a0a 50%,#111118 100%)' }} />
+                                            style={{ background:'radial-gradient(ellipse at 50% 0%, rgba(247,68,7,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 100%, rgba(254,183,5,0.05) 0%, transparent 50%)' }} />
                                         <Sparkles />
 
                                         {/* AI hero banner */}
-                                        <div className="relative shrink-0 flex items-center gap-3 px-4 py-4 border-b"
-                                            style={{ borderColor:'rgba(247,68,7,0.2)' }}>
-                                            <AiOrb size={44} />
-                                            <div>
+                                        <div className="relative shrink-0 flex items-center gap-3 px-4 py-3 border-b"
+                                            style={{ borderColor:'rgba(247,68,7,0.2)', background:'linear-gradient(135deg,#150a00 0%,#1a0e10 100%)' }}>
+                                            <AiOrb size={42} thinking={isAiTyping} />
+                                            <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5">
-                                                    <p className="text-white font-bold text-sm tracking-wide">Sizzora AI</p>
-                                                    <span className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold border"
-                                                        style={{ background:'rgba(247,68,7,0.15)', borderColor:'rgba(247,68,7,0.35)', color:'#fb923c' }}>
-                                                        BETA
-                                                    </span>
+                                                    <p className="text-white font-bold text-sm tracking-wide">Sizzora Food Concierge</p>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 mt-0.5">
                                                     <motion.div className="w-1.5 h-1.5 bg-green-400 rounded-full"
                                                         animate={{ opacity:[1,0.3,1] }} transition={{ duration:1.6, repeat:Infinity }} />
-                                                    <p className="text-green-400/90 text-[11px]">Online · Instant replies</p>
+                                                    <p className="text-[11px]" style={{ color:'#4ade8099' }}>
+                                                        {isAiTyping ? 'Finding the best options for you… 🍽️' : 'Online · Ready to help'}
+                                                    </p>
                                                 </div>
                                             </div>
-                                            <motion.div className="ml-auto"
-                                                animate={{ rotate:[0,15,-15,0], scale:[1,1.15,1] }}
-                                                transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}>
-                                                <RiSparklingFill size={20} style={{ color:'#feb70580' }}/>
+                                            <motion.div animate={{ rotate:[0,15,-15,0] }} transition={{ duration:3, repeat:Infinity, ease:'easeInOut' }}>
+                                                <RiSparklingFill size={18} style={{ color:'#feb70566' }}/>
                                             </motion.div>
                                         </div>
 
+                                        {/* Mode tabs */}
+                                        <div className="shrink-0 flex gap-1 px-2 py-1.5 border-b" style={{ background:'#0e0a04', borderColor:'rgba(247,68,7,0.12)' }}>
+                                            {AI_MODES.map(m => {
+                                                const Icon = m.icon;
+                                                const active = aiMode === m.id;
+                                                return (
+                                                    <button key={m.id} onClick={() => { setAiMode(m.id); setMessage(active ? message : ''); }}
+                                                        title={m.hint}
+                                                        className={`flex-1 flex items-center justify-center gap-1 py-1 rounded-lg text-[10px] font-semibold transition-all ${active ? 'text-stone-900' : 'text-stone-500 hover:text-amber-300 hover:bg-white/5'}`}
+                                                        style={active ? { background:'linear-gradient(135deg,#feb705,#f74407)' } : {}}>
+                                                        <Icon size={9}/>{m.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+
                                         {/* messages */}
-                                        <div className="relative flex-1 overflow-y-auto p-3 space-y-3">
+                                        <div className="relative flex-1 overflow-y-auto px-3 py-4 space-y-4">
                                             {aiMessages.map((msg, i) => {
                                                 const mine = msg.sender !== 'ai';
                                                 return (
-                                                    <motion.div key={i} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.2}}
-                                                        className={`flex items-end gap-2 ${mine ? 'flex-row-reverse' : ''}`}>
-                                                        {!mine && <AiOrb size={28} />}
-                                                        <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm shadow-md ${mine ? 'rounded-br-sm font-medium text-stone-900' : 'rounded-bl-sm text-stone-100'}`}
+                                                    <motion.div key={i}
+                                                        initial={{opacity:0, y:10, scale:0.97}}
+                                                        animate={{opacity:1, y:0, scale:1}}
+                                                        transition={{type:'spring', stiffness:340, damping:26}}
+                                                        className={`flex items-end gap-2.5 ${mine ? 'flex-row-reverse' : ''}`}>
+                                                        {!mine && <AiOrb size={30} />}
+                                                        <motion.div
+                                                            whileTap={{scale:0.98}}
+                                                            className={`max-w-[78%] rounded-2xl text-sm shadow-md ${mine ? 'rounded-br-sm font-medium text-stone-900' : 'rounded-bl-sm text-stone-100'}`}
                                                             style={mine
-                                                                ? { background:'linear-gradient(135deg,#feb705,#f74407)' }
-                                                                : { background:'#1e1208', border:'1px solid rgba(247,68,7,0.2)' }}>
+                                                                ? { background:'linear-gradient(135deg,#feb705,#f74407)', padding:'10px 14px' }
+                                                                : { background:'rgba(30,18,8,0.92)', border:'1px solid rgba(247,68,7,0.18)', padding:'10px 14px', backdropFilter:'blur(4px)' }}>
                                                             {msg.imagePreview && (
-                                                                <img src={msg.imagePreview} alt="attachment" className="mb-1.5 rounded-lg max-h-32 object-cover w-full"/>
+                                                                <img src={msg.imagePreview} alt="attachment" className="mb-2 rounded-xl max-h-36 object-cover w-full ring-1 ring-amber-500/30"/>
                                                             )}
-                                                            <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
-                                                            <p className={`text-[10px] mt-1 ${mine?'text-stone-700':'text-stone-500'}`}>
+                                                            <div className="leading-relaxed">
+                                                                {mine ? msg.content : (formatAiResponse(msg.content) || msg.content)}
+                                                            </div>
+                                                            <p className={`text-[10px] mt-1.5 ${mine?'text-stone-700':'text-stone-600'}`}>
                                                                 {new Date(msg.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
                                                             </p>
-                                                        </div>
+                                                        </motion.div>
                                                     </motion.div>
                                                 );
                                             })}
                                             {isAiTyping && (
-                                                <motion.div initial={{opacity:0}} animate={{opacity:1}} className="flex items-end gap-2">
-                                                    <AiOrb size={28}/>
-                                                    <div className="rounded-2xl rounded-bl-sm px-3 py-2.5"
-                                                        style={{ background:'#1e1208', border:'1px solid rgba(247,68,7,0.2)' }}>
-                                                        <TypingDots color="bg-orange-400"/>
+                                                <motion.div initial={{opacity:0,y:6}} animate={{opacity:1,y:0}} className="flex items-end gap-2.5">
+                                                    <AiOrb size={30} thinking={true}/>
+                                                    <div className="rounded-2xl rounded-bl-sm px-4 py-2.5"
+                                                        style={{ background:'rgba(30,18,8,0.9)', border:'1px solid rgba(247,68,7,0.2)' }}>
+                                                        <p className="text-amber-300/80 text-xs animate-pulse">Finding the best for you… 🍽️</p>
                                                     </div>
                                                 </motion.div>
                                             )}
@@ -670,52 +787,62 @@ const ChatWidget = () => {
                                         </div>
 
                                         {/* AI input */}
-                                        <div className="relative shrink-0 p-3 border-t" style={{ borderColor:'rgba(247,68,7,0.15)', background:'rgba(21,8,0,0.6)' }}>
-                                            <div className="flex flex-wrap gap-1.5 mb-2">
+                                        <div className="relative shrink-0 p-3 border-t" style={{ borderColor:'rgba(247,68,7,0.12)', background:'rgba(12,6,0,0.85)', backdropFilter:'blur(8px)' }}>
+                                            {/* Quick action chips */}
+                                            <div className="flex gap-1.5 mb-2.5 overflow-x-auto pb-0.5 scrollbar-hide" style={{ scrollbarWidth:'none' }}>
                                                 {QUICK_AI_PROMPTS.map((prompt) => (
-                                                    <button
-                                                        key={prompt}
-                                                        onClick={() => setMessage(prompt)}
-                                                        className="text-[10px] px-2 py-1 rounded-full border border-amber-500/30 text-amber-200 hover:text-white hover:border-amber-300 hover:bg-amber-500/15 transition-colors"
+                                                    <motion.button
+                                                        key={prompt.text}
+                                                        whileHover={{scale:1.04}} whileTap={{scale:0.96}}
+                                                        onClick={() => setMessage(prompt.text)}
+                                                        className="shrink-0 text-[10px] px-2.5 py-1 rounded-full border text-amber-200 hover:text-white hover:border-amber-400 transition-all"
+                                                        style={{ borderColor:'rgba(254,183,5,0.25)', background:'rgba(254,183,5,0.07)' }}
                                                     >
-                                                        {prompt}
-                                                    </button>
+                                                        {prompt.label}
+                                                    </motion.button>
                                                 ))}
                                             </div>
                                             {/* Image preview */}
                                             {aiImage && (
                                                 <div className="relative inline-block mb-2">
-                                                    <img src={aiImage.preview} alt="upload preview" className="h-16 w-16 rounded-lg object-cover border border-amber-500/40"/>
+                                                    <img src={aiImage.preview} alt="upload preview" className="h-16 w-16 rounded-xl object-cover ring-1 ring-amber-500/40"/>
                                                     {aiImage.uploading && (
-                                                        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 text-[9px] text-white">Uploading…</div>
+                                                        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/60 text-[9px] text-white">Uploading…</div>
                                                     )}
                                                     {aiImage.error && (
-                                                        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-red-900/70 text-[9px] text-white">Failed</div>
+                                                        <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-red-900/70 text-[9px] text-white">Failed</div>
                                                     )}
                                                     <button onClick={() => { setAiImage(null); if (imageInputRef.current) imageInputRef.current.value = ''; }}
-                                                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px]">✕</button>
+                                                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px] shadow">✕</button>
                                                 </div>
                                             )}
-                                            <div className="flex gap-2 items-center rounded-xl border px-3 py-1 transition-colors"
-                                                style={{ background:'#1e1208', borderColor:'rgba(247,68,7,0.25)' }}>
+                                            <div className="flex gap-2 items-center rounded-2xl border px-3 py-1.5 transition-colors"
+                                                style={{ background:'rgba(20,10,0,0.9)', borderColor:'rgba(247,68,7,0.3)', boxShadow:'0 2px 12px rgba(247,68,7,0.08)' }}>
                                                 <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden"/>
-                                                <button onClick={() => imageInputRef.current?.click()}
-                                                    className="text-amber-400 hover:text-amber-200 transition-colors shrink-0"
-                                                    title="Attach image">
-                                                    <FaImage size={15}/>
-                                                </button>
-                                                <input
-                                                    type="text" value={message} onChange={e=>setMessage(e.target.value)}
-                                                    onKeyPress={e=>e.key==='Enter'&&sendAiMsg()}
-                                                    placeholder="Ask Sizzora AI anything…"
-                                                    className="flex-1 bg-transparent text-white text-sm py-2 outline-none"
-                                                    style={{ caretColor:'#feb705' }}
-                                                />
-                                                <button onClick={sendAiMsg} disabled={!message.trim() && !aiImage}
-                                                    className="w-8 h-8 flex items-center justify-center rounded-lg text-stone-900 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow shrink-0"
+                                                <motion.button
+                                                    whileHover={{scale:1.15}} whileTap={{scale:0.9}}
+                                                    onClick={() => imageInputRef.current?.click()}
+                                                    className="text-amber-500/70 hover:text-amber-300 transition-colors shrink-0"
+                                                    title="Attach food photo">
+                                                    <FaImage size={14}/>
+                                                </motion.button>
+                                                <AnimatePresence mode="wait">
+                                                    <input
+                                                        key="ai-input"
+                                                        type="text" value={message} onChange={e=>setMessage(e.target.value)}
+                                                        onKeyPress={e=>e.key==='Enter'&&sendAiMsg()}
+                                                        placeholder={PLACEHOLDER_CYCLE[placeholderIdx]}
+                                                        className="flex-1 bg-transparent text-white text-sm py-1.5 outline-none placeholder-stone-600"
+                                                        style={{ caretColor:'#feb705' }}
+                                                    />
+                                                </AnimatePresence>
+                                                <motion.button
+                                                    whileHover={{scale:1.08}} whileTap={{scale:0.92}}
+                                                    onClick={sendAiMsg} disabled={!message.trim() && !aiImage}
+                                                    className="w-8 h-8 flex items-center justify-center rounded-xl text-stone-900 transition-all disabled:opacity-35 disabled:cursor-not-allowed shadow shrink-0"
                                                     style={{ background:'linear-gradient(135deg,#feb705,#f74407)' }}>
                                                     <FaPaperPlane size={12}/>
-                                                </button>
+                                                </motion.button>
                                             </div>
                                         </div>
                                     </div>
