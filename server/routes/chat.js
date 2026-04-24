@@ -305,6 +305,8 @@ router.post('/ai', async (req, res) => {
             userName: req.body.userName || '',
             userPhone: req.body.userPhone || '',
             userAddress: req.body.userAddress || '',
+            userId: req.body.userId || '',
+            imageUrl: req.body.imageUrl || '',
         });
         url.search = params.toString();
 

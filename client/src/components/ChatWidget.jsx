@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaTimes, FaPaperPlane, FaTrash, FaChevronLeft,
-    FaHeadset, FaArchive, FaExpand, FaCompress, FaMinus,
+    FaHeadset, FaArchive, FaExpand, FaCompress, FaMinus, FaImage,
 } from 'react-icons/fa';
 import { MdSupportAgent } from 'react-icons/md';
 import { RiRobot2Fill, RiSparklingFill } from 'react-icons/ri';
@@ -169,11 +169,13 @@ const ChatWidget = () => {
     }]);
     const [isAiTyping,   setIsAiTyping]   = useState(false);
     const [isTyping,     setIsTyping]     = useState(false);
+    const [aiImage,      setAiImage]      = useState(null); // { preview, url } after upload
 
     const messagesEndRef  = useRef(null);
     const typingTimeout   = useRef(null);
     const socketRef       = useRef(null);
     const resizeStateRef  = useRef(null);
+    const imageInputRef   = useRef(null);
     const [portalRoot,    setPortalRoot]  = useState(null);
 
     const size = SIZES[sizeKey];
@@ -270,18 +272,41 @@ const ChatWidget = () => {
         return gid;
     };
 
+    const handleImageSelect = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const preview = URL.createObjectURL(file);
+        setAiImage({ preview, url: null, uploading: true });
+        try {
+            const form = new FormData();
+            form.append('image', file);
+            const r = await axios.post('/api/orders/chatbot-upload', form, {
+                headers: { 'x-chatbot-secret': 'sizzora-chatbot-secret-2026' },
+            });
+            setAiImage({ preview, url: r.data.imageUrl, uploading: false });
+        } catch {
+            setAiImage({ preview, url: null, uploading: false, error: true });
+        }
+    };
+
     const sendAiMsg = async () => {
-        if (!message.trim()) return;
+        if (!message.trim() && !aiImage) return;
         const txt = message; setMessage('');
-        const msgs = [...aiMessages, { sender: isAdmin?'admin':'user', content:txt, createdAt:new Date() }];
+        const imgSnapshot = aiImage; setAiImage(null);
+        if (imageInputRef.current) imageInputRef.current.value = '';
+
+        const userContent = txt + (imgSnapshot?.url ? `\n[Image attached]` : '');
+        const msgs = [...aiMessages, { sender: isAdmin?'admin':'user', content: userContent, imagePreview: imgSnapshot?.preview, createdAt:new Date() }];
         setAiMessages(msgs); setIsAiTyping(true);
         try {
             const payload = {
-                message: txt,
+                message: txt || (imgSnapshot ? 'I uploaded an image.' : ''),
                 sessionId: user?.id || user?._id || getSessionId(),
+                userId: user?.id || user?._id || '',
                 userName: user?.name || 'Customer',
                 userPhone: user?.phone || '',
                 userAddress: user?.address || '',
+                imageUrl: imgSnapshot?.url || '',
             };
 
             const r = await axios.post('/api/chat/ai', payload);
@@ -621,7 +646,10 @@ const ChatWidget = () => {
                                                             style={mine
                                                                 ? { background:'linear-gradient(135deg,#feb705,#f74407)' }
                                                                 : { background:'#1e1208', border:'1px solid rgba(247,68,7,0.2)' }}>
-                                                            <p className="leading-relaxed">{msg.content}</p>
+                                                            {msg.imagePreview && (
+                                                                <img src={msg.imagePreview} alt="attachment" className="mb-1.5 rounded-lg max-h-32 object-cover w-full"/>
+                                                            )}
+                                                            <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                                                             <p className={`text-[10px] mt-1 ${mine?'text-stone-700':'text-stone-500'}`}>
                                                                 {new Date(msg.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
                                                             </p>
@@ -654,8 +682,28 @@ const ChatWidget = () => {
                                                     </button>
                                                 ))}
                                             </div>
+                                            {/* Image preview */}
+                                            {aiImage && (
+                                                <div className="relative inline-block mb-2">
+                                                    <img src={aiImage.preview} alt="upload preview" className="h-16 w-16 rounded-lg object-cover border border-amber-500/40"/>
+                                                    {aiImage.uploading && (
+                                                        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-black/50 text-[9px] text-white">Uploading…</div>
+                                                    )}
+                                                    {aiImage.error && (
+                                                        <div className="absolute inset-0 flex items-center justify-center rounded-lg bg-red-900/70 text-[9px] text-white">Failed</div>
+                                                    )}
+                                                    <button onClick={() => { setAiImage(null); if (imageInputRef.current) imageInputRef.current.value = ''; }}
+                                                        className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-600 text-white flex items-center justify-center text-[9px]">✕</button>
+                                                </div>
+                                            )}
                                             <div className="flex gap-2 items-center rounded-xl border px-3 py-1 transition-colors"
                                                 style={{ background:'#1e1208', borderColor:'rgba(247,68,7,0.25)' }}>
+                                                <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden"/>
+                                                <button onClick={() => imageInputRef.current?.click()}
+                                                    className="text-amber-400 hover:text-amber-200 transition-colors shrink-0"
+                                                    title="Attach image">
+                                                    <FaImage size={15}/>
+                                                </button>
                                                 <input
                                                     type="text" value={message} onChange={e=>setMessage(e.target.value)}
                                                     onKeyPress={e=>e.key==='Enter'&&sendAiMsg()}
@@ -663,7 +711,7 @@ const ChatWidget = () => {
                                                     className="flex-1 bg-transparent text-white text-sm py-2 outline-none"
                                                     style={{ caretColor:'#feb705' }}
                                                 />
-                                                <button onClick={sendAiMsg} disabled={!message.trim()}
+                                                <button onClick={sendAiMsg} disabled={!message.trim() && !aiImage}
                                                     className="w-8 h-8 flex items-center justify-center rounded-lg text-stone-900 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow shrink-0"
                                                     style={{ background:'linear-gradient(135deg,#feb705,#f74407)' }}>
                                                     <FaPaperPlane size={12}/>

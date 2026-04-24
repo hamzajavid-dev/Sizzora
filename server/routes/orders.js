@@ -28,6 +28,18 @@ const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 const { verifyAdmin } = auth;
 
+// Chatbot image upload (server-to-server, secured with shared secret)
+router.post('/chatbot-upload', upload.single('image'), async (req, res) => {
+    const secret = req.headers['x-chatbot-secret'];
+    if (!secret || secret !== process.env.CHATBOT_SECRET) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    if (!req.file) {
+        return res.status(400).json({ error: 'No image provided' });
+    }
+    res.json({ imageUrl: `/uploads/${req.file.filename}` });
+});
+
 // Chatbot order creation (server-to-server, secured with shared secret)
 router.post('/chatbot', async (req, res) => {
     const secret = req.headers['x-chatbot-secret'];
@@ -35,7 +47,7 @@ router.post('/chatbot', async (req, res) => {
         return res.status(401).json({ error: 'Unauthorized' });
     }
     try {
-        const { userId, items, totalAmount, shippingAddress, customerName, phoneNumber } = req.body;
+        const { userId, items, totalAmount, shippingAddress, customerName, phoneNumber, imageUrl } = req.body;
         if (!items || !items.length || !totalAmount || !shippingAddress || !customerName || !phoneNumber) {
             return res.status(400).json({ error: 'Missing required order fields' });
         }
@@ -47,9 +59,33 @@ router.post('/chatbot', async (req, res) => {
             customerName,
             phoneNumber,
             paymentMethod: 'Payment Proof',
+            paymentProofImage: imageUrl || null,
             status: 'pending'
         });
         await order.save();
+
+        // Create a chat for the order if userId is a real user
+        if (userId && userId !== 'guest') {
+            try {
+                const user = await User.findById(userId);
+                if (user) {
+                    const newChat = new Chat({
+                        userId,
+                        userName: user.displayName || customerName,
+                        userEmail: user.email,
+                        orderId: order._id,
+                        chatType: 'order',
+                        chatTitle: `Order #${order._id.toString().slice(-6)}`,
+                        isActive: true,
+                        messages: []
+                    });
+                    await newChat.save();
+                }
+            } catch (chatErr) {
+                console.error('Failed to create chat for chatbot order:', chatErr);
+            }
+        }
+
         res.status(201).json({ orderId: order._id, totalAmount: order.totalAmount });
     } catch (err) {
         res.status(500).json({ error: err.message });
