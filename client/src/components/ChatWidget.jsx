@@ -383,7 +383,7 @@ const ChatWidget = () => {
         borderAm: 'rgba(245,158,11,0.18)',
         amber:    '#f59e0b',
         amberDk:  '#d97706',
-        textSec:  '#6b6460',
+        textSec:  '#a09188',
     };
 
     const amberGrad = `linear-gradient(135deg,${C.amber},${C.amberDk})`;
@@ -465,7 +465,7 @@ const ChatWidget = () => {
                                         <>
                                             <motion.div className="w-1.5 h-1.5 rounded-full bg-emerald-400"
                                                 animate={{ opacity:[1,0.3,1] }} transition={{ duration:2, repeat:Infinity }}/>
-                                            <span className="text-[10px] text-emerald-400/60">
+                                            <span className="text-[10px] text-emerald-400/80">
                                                 {isAiTyping ? 'Thinking…' : 'Online'}
                                             </span>
                                         </>
@@ -612,7 +612,7 @@ const ChatWidget = () => {
                                                             <div className="leading-relaxed">
                                                                 {mine ? msg.content : (formatAiResponse(msg.content) || msg.content)}
                                                             </div>
-                                                            <p className="text-[9px] mt-1.5 opacity-40">
+                                                            <p className="text-[9px] mt-1.5 opacity-55">
                                                                 {new Date(msg.createdAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
                                                             </p>
                                                         </div>
@@ -671,7 +671,7 @@ const ChatWidget = () => {
                                                     type="text" value={message} onChange={e => setMessage(e.target.value)}
                                                     onKeyPress={e => e.key==='Enter' && sendAiMsg()}
                                                     placeholder={PLACEHOLDERS[placeholderIdx]}
-                                                    className="flex-1 bg-transparent text-[13px] text-white outline-none py-0.5 placeholder-stone-600"
+                                                    className="flex-1 bg-transparent text-[13px] text-white outline-none py-0.5 placeholder-stone-500"
                                                     style={{ caretColor: C.amber }}
                                                 />
                                                 <button onClick={sendAiMsg} disabled={!message.trim() && !aiImage}
@@ -801,7 +801,7 @@ const ChatWidget = () => {
                                                                     ? { background: amberGrad }
                                                                     : { background: C.surface, border:`1px solid ${C.border}` }}>
                                                                 <p className="leading-relaxed">{msg.message}</p>
-                                                                <p className="text-[9px] mt-1 opacity-40">
+                                                                <p className="text-[9px] mt-1 opacity-55">
                                                                     {new Date(msg.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}
                                                                 </p>
                                                             </div>
@@ -839,7 +839,7 @@ const ChatWidget = () => {
                                                     onKeyPress={e => e.key==='Enter' && sendMsg()}
                                                     placeholder={selectedChat.isBlocked&&!isAdmin ? 'Messaging disabled' : 'Type a message…'}
                                                     disabled={selectedChat.isBlocked&&!isAdmin}
-                                                    className="flex-1 bg-transparent text-[13px] text-white outline-none py-0.5 placeholder-stone-700 disabled:cursor-not-allowed"
+                                                    className="flex-1 bg-transparent text-[13px] text-white outline-none py-0.5 placeholder-stone-500 disabled:cursor-not-allowed"
                                                     style={{ caretColor: C.amber }}
                                                 />
                                                 <button onClick={sendMsg} disabled={(selectedChat.isBlocked&&!isAdmin)||!message.trim()}
