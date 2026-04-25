@@ -58,6 +58,7 @@ const typeBadge = (t) => ({
 
 /* ─── AI response formatter ──────────────────────────────────── */
 const parseInline = (str) => {
+    if (typeof str !== 'string') return str;
     const parts = str.split(/(\*\*[^*]+\*\*)/g);
     if (parts.length === 1) return str;
     return parts.map((p, i) =>
@@ -69,8 +70,16 @@ const parseInline = (str) => {
 
 const formatAiResponse = (text) => {
     if (!text) return null;
-    return text.split('\n').filter(l => l.trim()).map((line, i) => {
+    const normalized = String(text).replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+    return normalized.split('\n').filter(l => l.trim()).map((line, i) => {
         const t = line.trim();
+        // markdown headings: ### / ## / #
+        if (/^#{1,3}\s/.test(t)) return (
+            <p key={i} className="font-semibold text-amber-300 mt-2 mb-0.5">
+                {parseInline(t.replace(/^#{1,3}\s/, ''))}
+            </p>
+        );
+        // numbered list
         if (/^\d+\.\s/.test(t)) {
             const m = t.match(/^(\d+)\.\s(.+)$/);
             if (m) return (
@@ -80,14 +89,20 @@ const formatAiResponse = (text) => {
                 </div>
             );
         }
-        if (/^[-•]\s/.test(t)) return (
+        // bullet list: -, •, or * followed by space
+        if (/^[-•*]\s/.test(t)) return (
             <div key={i} className="flex items-start gap-2 py-0.5">
                 <span className="mt-2 w-1 h-1 shrink-0 rounded-full bg-amber-500/60"/>
-                <span>{parseInline(t.replace(/^[-•]\s/, ''))}</span>
+                <span>{parseInline(t.replace(/^[-•*]\s/, ''))}</span>
             </div>
         );
-        if (/^\*\*.+\*\*$/.test(t)) return <p key={i} className="font-semibold text-amber-300 mt-2 mb-0.5">{t.replace(/\*\*/g,'')}</p>;
-        if (/^---+$/.test(t))         return <hr key={i} className="border-white/8 my-2"/>;
+        // full-line bold as section header
+        if (/^\*\*.+\*\*$/.test(t)) return (
+            <p key={i} className="font-semibold text-amber-300 mt-2 mb-0.5">
+                {parseInline(t)}
+            </p>
+        );
+        if (/^---+$/.test(t)) return <hr key={i} className="border-white/8 my-2"/>;
         return <p key={i} className="py-0.5 leading-relaxed">{parseInline(t)}</p>;
     });
 };
@@ -312,7 +327,7 @@ const ChatWidget = () => {
         try {
             const r = await axios.post('/api/chat/ai', {
                 message: txt || (img ? 'I uploaded an image.' : ''),
-                sessionId: user?.id || getSessionId(),
+                sessionId: getSessionId(),
                 userId: user?.id || '',
                 userName: user?.name || 'Customer',
                 userPhone: user?.phone || '',
