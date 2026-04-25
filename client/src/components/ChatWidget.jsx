@@ -296,7 +296,7 @@ const ChatWidget = () => {
         try {
             const form = new FormData();
             form.append('image', file);
-            const r = await axios.post('/api/orders/chatbot-upload', form, { headers: { 'x-chatbot-secret': 'sizzora-chatbot-secret-2026' } });
+            const r = await axios.post('/api/orders/chatbot-upload', form, { withCredentials: true });
             setAiImage({ preview, url: r.data.imageUrl, uploading: false });
         } catch { setAiImage({ preview, url: null, uploading: false, error: true }); }
     };

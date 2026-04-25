@@ -28,11 +28,17 @@ const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 const { verifyAdmin } = auth;
 
-// Chatbot image upload (server-to-server, secured with shared secret)
+// Chatbot image upload — called directly from the browser, uses cookie auth
 router.post('/chatbot-upload', upload.single('image'), async (req, res) => {
-    const secret = req.headers['x-chatbot-secret'];
-    if (!secret || secret !== process.env.CHATBOT_SECRET) {
-        return res.status(401).json({ error: 'Unauthorized' });
+    // Authenticate via cookie (same JWT the rest of the app uses)
+    const token = req.cookies?.token;
+    if (!token) {
+        return res.status(401).json({ error: 'You must be logged in to upload images.' });
+    }
+    try {
+        jwt.verify(token, process.env.JWT_SECRET || 'secret');
+    } catch {
+        return res.status(401).json({ error: 'Session expired. Please log in again.' });
     }
     if (!req.file) {
         return res.status(400).json({ error: 'No image provided' });
