@@ -57,28 +57,38 @@ const typeBadge = (t) => ({
 })[t] || 'bg-stone-500/10 text-stone-400 border-stone-500/20';
 
 /* ─── AI response formatter ──────────────────────────────────── */
+const parseInline = (str) => {
+    const parts = str.split(/(\*\*[^*]+\*\*)/g);
+    if (parts.length === 1) return str;
+    return parts.map((p, i) =>
+        /^\*\*[^*]+\*\*$/.test(p)
+            ? <strong key={i} className="font-semibold text-white">{p.slice(2, -2)}</strong>
+            : p
+    );
+};
+
 const formatAiResponse = (text) => {
     if (!text) return null;
     return text.split('\n').filter(l => l.trim()).map((line, i) => {
         const t = line.trim();
         if (/^\d+\.\s/.test(t)) {
-            const [, num, rest] = t.match(/^(\d+)\.\s(.+)$/);
-            return (
+            const m = t.match(/^(\d+)\.\s(.+)$/);
+            if (m) return (
                 <div key={i} className="flex items-start gap-2 py-0.5">
-                    <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full flex items-center justify-center text-[9px] font-bold text-black bg-amber-400">{num}</span>
-                    <span>{rest}</span>
+                    <span className="mt-0.5 w-4 h-4 shrink-0 rounded-full flex items-center justify-center text-[9px] font-bold text-black bg-amber-400">{m[1]}</span>
+                    <span>{parseInline(m[2])}</span>
                 </div>
             );
         }
         if (/^[-•]\s/.test(t)) return (
             <div key={i} className="flex items-start gap-2 py-0.5">
                 <span className="mt-2 w-1 h-1 shrink-0 rounded-full bg-amber-500/60"/>
-                <span>{t.replace(/^[-•]\s/, '')}</span>
+                <span>{parseInline(t.replace(/^[-•]\s/, ''))}</span>
             </div>
         );
         if (/^\*\*.+\*\*$/.test(t)) return <p key={i} className="font-semibold text-amber-300 mt-2 mb-0.5">{t.replace(/\*\*/g,'')}</p>;
         if (/^---+$/.test(t))         return <hr key={i} className="border-white/8 my-2"/>;
-        return <p key={i} className="py-0.5 leading-relaxed">{t}</p>;
+        return <p key={i} className="py-0.5 leading-relaxed">{parseInline(t)}</p>;
     });
 };
 

@@ -51,6 +51,9 @@ router.post('/chatbot', async (req, res) => {
         if (!items || !items.length || !totalAmount || !shippingAddress || !customerName || !phoneNumber) {
             return res.status(400).json({ error: 'Missing required order fields' });
         }
+        if (!imageUrl) {
+            return res.status(400).json({ error: 'Payment proof image is required. Please ask the customer to upload a screenshot of their payment before placing the order.' });
+        }
         const order = new Order({
             user: userId || 'guest',
             items,
