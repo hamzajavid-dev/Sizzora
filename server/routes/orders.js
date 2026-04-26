@@ -11,7 +11,10 @@ const fs = require('fs');
 // Use absolute path so uploads are always in server/uploads/ regardless of CWD
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 
-// Configure Multer Storage
+// Memory storage for chatbot uploads (Vercel Blob in prod, disk fallback locally)
+const memoryUpload = multer({ storage: multer.memoryStorage() });
+
+// Disk storage for regular order payment proof uploads
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         if (!fs.existsSync(UPLOADS_DIR)) {
@@ -31,14 +34,36 @@ const auth = require('../middleware/auth');
 const { verifyAdmin } = auth;
 
 // Chatbot image upload — open to all (guests included); payment proof doesn't require a user account
-router.post('/chatbot-upload', upload.single('image'), async (req, res) => {
+router.post('/chatbot-upload', memoryUpload.single('image'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No image provided' });
     }
-    // Return absolute URL so n8n / MCP server can fetch the image
-    const baseUrl = process.env.BACKEND_URL ||
-        `${req.protocol}://${req.get('host')}`;
-    res.json({ imageUrl: `${baseUrl}/uploads/${req.file.filename}` });
+    try {
+        let imageUrl;
+        if (process.env.BLOB_READ_WRITE_TOKEN) {
+            // Production: upload to Vercel Blob
+            const { put } = require('@vercel/blob');
+            const filename = `payment-proofs/${Date.now()}${path.extname(req.file.originalname || '.jpg')}`;
+            const blob = await put(filename, req.file.buffer, {
+                access: 'public',
+                contentType: req.file.mimetype,
+            });
+            imageUrl = blob.url;
+        } else {
+            // Local dev: write to disk
+            if (!fs.existsSync(UPLOADS_DIR)) {
+                fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+            }
+            const filename = Date.now() + path.extname(req.file.originalname || '.jpg');
+            fs.writeFileSync(path.join(UPLOADS_DIR, filename), req.file.buffer);
+            const baseUrl = process.env.BACKEND_URL || `${req.protocol}://${req.get('host')}`;
+            imageUrl = `${baseUrl}/uploads/${filename}`;
+        }
+        res.json({ imageUrl });
+    } catch (err) {
+        console.error('chatbot-upload error:', err);
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Chatbot order creation (server-to-server, secured with shared secret)
