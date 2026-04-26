@@ -8,14 +8,16 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
+// Use absolute path so uploads are always in server/uploads/ regardless of CWD
+const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
+
 // Configure Multer Storage
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadDir = 'uploads/';
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir);
+        if (!fs.existsSync(UPLOADS_DIR)) {
+            fs.mkdirSync(UPLOADS_DIR, { recursive: true });
         }
-        cb(null, uploadDir);
+        cb(null, UPLOADS_DIR);
     },
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname));
@@ -28,22 +30,15 @@ const jwt = require('jsonwebtoken');
 const auth = require('../middleware/auth');
 const { verifyAdmin } = auth;
 
-// Chatbot image upload — called directly from the browser, uses cookie auth
+// Chatbot image upload — open to all (guests included); payment proof doesn't require a user account
 router.post('/chatbot-upload', upload.single('image'), async (req, res) => {
-    // Authenticate via cookie (same JWT the rest of the app uses)
-    const token = req.cookies?.token;
-    if (!token) {
-        return res.status(401).json({ error: 'You must be logged in to upload images.' });
-    }
-    try {
-        jwt.verify(token, process.env.JWT_SECRET || 'secret');
-    } catch {
-        return res.status(401).json({ error: 'Session expired. Please log in again.' });
-    }
     if (!req.file) {
         return res.status(400).json({ error: 'No image provided' });
     }
-    res.json({ imageUrl: `/uploads/${req.file.filename}` });
+    // Return absolute URL so n8n / MCP server can fetch the image
+    const baseUrl = process.env.BACKEND_URL ||
+        `${req.protocol}://${req.get('host')}`;
+    res.json({ imageUrl: `${baseUrl}/uploads/${req.file.filename}` });
 });
 
 // Chatbot order creation (server-to-server, secured with shared secret)

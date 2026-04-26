@@ -54,6 +54,9 @@ io.on('connection', (socket) => {
     });
 });
 
+// Trust Render/Vercel reverse proxy so req.protocol returns 'https' in production
+app.set('trust proxy', 1);
+
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
