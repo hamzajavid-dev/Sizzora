@@ -334,19 +334,21 @@ const ChatWidget = () => {
                 userAddress: user?.address || '',
                 imageUrl: img?.url || '',
             });
-            const extractReply = (d) => {
+            const extractReply = (d, depth = 0) => {
+                if (depth > 10) return null;
                 if (typeof d === 'string') return d;
-                if (Array.isArray(d) && d.length > 0) return extractReply(d[0]);
+                if (Array.isArray(d) && d.length > 0) return extractReply(d[0], depth + 1);
                 if (d && typeof d === 'object') {
                     const v = d.reply || d.message || d.output || d.text;
                     if (typeof v === 'string') return v;
-                    if (v != null) return extractReply(v);
-                    if (d.json) return extractReply(d.json);
+                    if (v != null) return extractReply(v, depth + 1);
+                    if (d.json) return extractReply(d.json, depth + 1);
                 }
                 return null;
             };
             const reply = extractReply(r.data);
-            setAiMessages([...msgs, { sender:'ai', content: reply || 'Got it!', createdAt: new Date() }]);
+            const content = typeof reply === 'string' && reply.trim() ? reply : 'Got it!';
+            setAiMessages([...msgs, { sender:'ai', content, createdAt: new Date() }]);
         } catch (err) {
             const fb = err?.response?.data?.message || err?.response?.data?.error || "Sorry, I'm having trouble. Try again in a moment!";
             setAiMessages([...msgs, { sender:'ai', content: fb, createdAt: new Date() }]);

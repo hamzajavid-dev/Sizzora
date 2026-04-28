@@ -80,8 +80,26 @@ router.post('/chatbot', async (req, res) => {
         if (!imageUrl) {
             return res.status(400).json({ error: 'Payment proof image is required. Please ask the customer to upload a screenshot of their payment before placing the order.' });
         }
+
+        // Resolve the real user ID — fall back to name/phone lookup if userId is missing or a placeholder
+        let resolvedUserId = userId;
+        const isRealObjectId = userId && /^[a-f\d]{24}$/i.test(userId);
+        if (!isRealObjectId) {
+            try {
+                const foundUser = await User.findOne({
+                    $or: [
+                        { phone: phoneNumber },
+                        { name: customerName },
+                    ]
+                }).sort({ createdAt: -1 });
+                resolvedUserId = foundUser ? foundUser._id.toString() : 'guest';
+            } catch (_) {
+                resolvedUserId = 'guest';
+            }
+        }
+
         const order = new Order({
-            user: userId || 'guest',
+            user: resolvedUserId || 'guest',
             items,
             totalAmount,
             shippingAddress,
@@ -94,12 +112,12 @@ router.post('/chatbot', async (req, res) => {
         await order.save();
 
         // Create a chat for the order if userId is a real user
-        if (userId && userId !== 'guest') {
+        if (resolvedUserId && resolvedUserId !== 'guest') {
             try {
-                const user = await User.findById(userId);
+                const user = await User.findById(resolvedUserId);
                 if (user) {
                     const newChat = new Chat({
-                        userId,
+                        userId: resolvedUserId,
                         userName: user.displayName || customerName,
                         userEmail: user.email,
                         orderId: order._id,

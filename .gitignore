@@ -16,3 +16,4 @@ server/check_*.js
 server/reset_*.js
 server/seed_*.js
 server/cleanup_*
+.vercel
