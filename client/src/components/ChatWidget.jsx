@@ -334,7 +334,18 @@ const ChatWidget = () => {
                 userAddress: user?.address || '',
                 imageUrl: img?.url || '',
             });
-            const reply = r.data?.reply || r.data?.message || r.data?.output || r.data?.text || (typeof r.data==='string' ? r.data : null);
+            const extractReply = (d) => {
+                if (typeof d === 'string') return d;
+                if (Array.isArray(d) && d.length > 0) return extractReply(d[0]);
+                if (d && typeof d === 'object') {
+                    const v = d.reply || d.message || d.output || d.text;
+                    if (typeof v === 'string') return v;
+                    if (v != null) return extractReply(v);
+                    if (d.json) return extractReply(d.json);
+                }
+                return null;
+            };
+            const reply = extractReply(r.data);
             setAiMessages([...msgs, { sender:'ai', content: reply || 'Got it!', createdAt: new Date() }]);
         } catch (err) {
             const fb = err?.response?.data?.message || err?.response?.data?.error || "Sorry, I'm having trouble. Try again in a moment!";
