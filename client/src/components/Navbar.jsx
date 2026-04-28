@@ -20,8 +20,9 @@ const Navbar = () => {
 
     return (
         <nav className="fixed w-full z-50 top-0 left-0">
-            <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(8,6,4,0.97),rgba(18,11,6,0.95),rgba(40,16,8,0.93))] backdrop-blur-xl border-b border-primary/15 shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
-                <div className="absolute inset-0 opacity-30 pointer-events-none bg-[radial-gradient(circle_at_10%_20%,rgba(232,150,58,0.28),transparent_45%),radial-gradient(circle_at_85%_0%,rgba(122,63,34,0.35),transparent_40%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(10,7,4,0.98)_0%,rgba(22,13,6,0.96)_45%,rgba(50,20,8,0.94)_100%)] backdrop-blur-2xl border-b border-primary/20 shadow-[0_1px_0_rgba(232,150,58,0.08),0_16px_48px_rgba(0,0,0,0.7)]">
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_60%_100%_at_8%_0%,rgba(232,150,58,0.18),transparent),radial-gradient(ellipse_50%_90%_at_92%_0%,rgba(196,59,44,0.16),transparent)]" />
+                <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
