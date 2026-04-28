@@ -75,7 +75,7 @@ const Home = () => {
     }
 
     return (
-        <div className="min-h-screen bg-stone-900 text-white pt-24">
+        <div className="min-h-screen text-white pt-24" style={{backgroundColor:'#0A0806'}}>
             {/* Hero Section */}
             <section className="relative px-4 pb-20 pt-10 overflow-hidden">
                 <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
@@ -84,19 +84,20 @@ const Home = () => {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight">
-                            TASTE THE <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary filter drop-shadow-lg">EXTRAORDINARY</span>
+                        <p className="text-primary/70 text-sm font-semibold tracking-[0.28em] uppercase mb-4">— Crafted with Fire &amp; Soul</p>
+                        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-[1.05]">
+                            Where Every<br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-amber-400 to-secondary italic">Bite Lingers.</span>
                         </h1>
-                        <p className="text-gray-300 text-lg md:text-xl mb-8 max-w-lg leading-relaxed">
-                            Experience culinary perfection with our handcrafted dishes, made from the finest ingredients and delivered with passion.
+                        <p className="text-stone-400 text-lg mb-8 max-w-lg leading-relaxed font-light">
+                            Bold flavors, honest ingredients. Sizzora brings the kitchen to your door — no shortcuts, no compromise.
                         </p>
-                        <div className="flex gap-4">
-                            <Link to="/menu" className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-stone-900 font-extrabold px-8 py-4 rounded-full text-lg shadow-[0_0_20px_rgba(254,183,5,0.4)] hover:shadow-[0_0_30px_rgba(254,183,5,0.6)] transition-all transform hover:-translate-y-1 animate-pulse">
+                        <div className="flex gap-4 flex-wrap">
+                            <Link to="/menu" className="bg-gradient-to-r from-primary to-secondary hover:from-secondary hover:to-primary text-stone-950 font-bold px-8 py-4 rounded-xl text-base shadow-[0_0_28px_rgba(232,150,58,0.35)] hover:shadow-[0_0_40px_rgba(232,150,58,0.5)] transition-all transform hover:-translate-y-0.5">
                                 Order Now
                             </Link>
-                            <Link to="/about" className="bg-transparent border-2 border-primary text-primary hover:bg-primary hover:text-stone-900 font-bold px-8 py-4 rounded-full text-lg transition-all">
-                                Learn More
+                            <Link to="/about" className="bg-transparent border border-stone-600 text-stone-300 hover:border-primary hover:text-primary font-medium px-8 py-4 rounded-xl text-base transition-all">
+                                Our Story
                             </Link>
                         </div>
                     </motion.div>
@@ -160,26 +161,27 @@ const Home = () => {
             </section>
 
             {/* Trending Dishes Section */}
-            <section className="py-20 px-4 bg-stone-800/30">
+            <section className="py-20 px-4" style={{backgroundColor:'rgba(22,18,16,0.5)'}}>
                 <div className="max-w-7xl mx-auto">
-                    <motion.h2
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-4xl font-extrabold text-center mb-12"
+                        className="text-center mb-12"
                     >
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Trending Now</span>
-                    </motion.h2>
+                        <p className="text-primary/60 text-xs font-semibold tracking-[0.28em] uppercase mb-3">— What's Hot</p>
+                        <h2 className="text-4xl md:text-5xl font-semibold text-white">Trending <span className="italic text-primary">Right Now</span></h2>
+                    </motion.div>
 
                     {trendingProducts.length === 0 ? (
-                        <p className="text-center text-gray-400">No trending dishes at the moment.</p>
+                        <p className="text-center text-stone-500">No trending dishes at the moment.</p>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {trendingProducts.map((product) => (
                                 <motion.div
                                     key={product._id}
-                                    whileHover={{ y: -10 }}
-                                    className="bg-stone-800 rounded-2xl overflow-hidden shadow-lg border border-stone-700 hover:border-primary/50 transition-all flex flex-col h-full"
+                                    whileHover={{ y: -6 }}
+                                    className="rounded-2xl overflow-hidden shadow-xl border border-stone-800/80 hover:border-primary/40 transition-all flex flex-col h-full" style={{backgroundColor:'#161210'}}
                                 >
                                     <div className="h-48 overflow-hidden relative">
                                         <img src={getImageUrl(product.image)} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 hover:scale-110" />
@@ -202,61 +204,71 @@ const Home = () => {
 
             {/* Why Choose Us Section */}
             <section className="py-20 px-4">
-                <div className="max-w-7xl mx-auto text-center">
-                    <motion.h2
+                <div className="max-w-7xl mx-auto">
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-4xl font-extrabold mb-16"
+                        className="text-center mb-16"
                     >
-                        Why Choose <span className="text-primary">Sizzora?</span>
-                    </motion.h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        <div className="p-6 bg-stone-800/50 rounded-2xl border border-stone-700/50 hover:border-primary/30 transition-colors">
-                            <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center mb-6">
-                                <span className="text-3xl">🚀</span>
+                        <p className="text-primary/60 text-xs font-semibold tracking-[0.28em] uppercase mb-3">— The Sizzora Difference</p>
+                        <h2 className="text-4xl md:text-5xl font-semibold text-white">Why <span className="italic text-primary">Sizzora?</span></h2>
+                    </motion.div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} viewport={{ once: true }}
+                            className="p-7 rounded-2xl border border-stone-800 hover:border-primary/30 transition-colors group" style={{backgroundColor:'#161210'}}
+                        >
+                            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                                <span className="text-2xl">⚡</span>
                             </div>
-                            <h3 className="text-xl font-bold mb-4 text-white">Fastest Delivery</h3>
-                            <p className="text-gray-400">We ensure your food arrives hot and fresh, faster than you expect.</p>
-                        </div>
-                        <div className="p-6 bg-stone-800/50 rounded-2xl border border-stone-700/50 hover:border-primary/30 transition-colors">
-                            <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center mb-6">
-                                <span className="text-3xl">🥗</span>
+                            <h3 className="text-lg font-semibold mb-3 text-white">Fast Delivery</h3>
+                            <p className="text-stone-500 text-sm leading-relaxed">Hot, fresh, on time. We don't keep you waiting.</p>
+                        </motion.div>
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} viewport={{ once: true }}
+                            className="p-7 rounded-2xl border border-stone-800 hover:border-primary/30 transition-colors group" style={{backgroundColor:'#161210'}}
+                        >
+                            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                                <span className="text-2xl">🌿</span>
                             </div>
-                            <h3 className="text-xl font-bold mb-4 text-white">Fresh Ingredients</h3>
-                            <p className="text-gray-400">We use only the finest, locally sourced ingredients for our dishes.</p>
-                        </div>
-                        <div className="p-6 bg-stone-800/50 rounded-2xl border border-stone-700/50 hover:border-primary/30 transition-colors">
-                            <div className="w-16 h-16 mx-auto bg-primary/20 rounded-full flex items-center justify-center mb-6">
-                                <span className="text-3xl">💎</span>
+                            <h3 className="text-lg font-semibold mb-3 text-white">Honest Ingredients</h3>
+                            <p className="text-stone-500 text-sm leading-relaxed">Locally sourced, no fillers, no shortcuts. Just real food.</p>
+                        </motion.div>
+                        <motion.div
+                            initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} viewport={{ once: true }}
+                            className="p-7 rounded-2xl border border-stone-800 hover:border-primary/30 transition-colors group" style={{backgroundColor:'#161210'}}
+                        >
+                            <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                                <span className="text-2xl">🔥</span>
                             </div>
-                            <h3 className="text-xl font-bold mb-4 text-white">Premium Quality</h3>
-                            <p className="text-gray-400">Experience 5-star dining quality at affordable prices.</p>
-                        </div>
+                            <h3 className="text-lg font-semibold mb-3 text-white">Cooked to Order</h3>
+                            <p className="text-stone-500 text-sm leading-relaxed">Every dish made fresh when you order — never pre-cooked.</p>
+                        </motion.div>
                     </div>
                 </div>
             </section>
 
-            {/* Image Showcase Section - Fading Slider */}
-            <section className="py-20 px-4 bg-gradient-to-b from-stone-900 via-stone-800 to-stone-900">
+            {/* Image Showcase Section */}
+            <section className="py-20 px-4" style={{background:'linear-gradient(180deg,#100A06 0%,#161210 50%,#100A06 100%)'}}>
                 <div className="max-w-6xl mx-auto">
-                    <motion.h2
+                    <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6 }}
                         viewport={{ once: true }}
-                        className="text-4xl font-bold text-center mb-12"
+                        className="text-center mb-12"
                     >
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Experience Excellence</span>
-                    </motion.h2>
+                        <p className="text-primary/60 text-xs font-semibold tracking-[0.28em] uppercase mb-3">— The Experience</p>
+                        <h2 className="text-4xl md:text-5xl font-semibold text-white italic">A Feast for the Eyes</h2>
+                    </motion.div>
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.97 }}
                         whileInView={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.8 }}
                         viewport={{ once: true }}
-                        className="relative rounded-3xl overflow-hidden shadow-2xl shadow-primary/20 border-4 border-primary/30 group"
+                        className="relative rounded-2xl overflow-hidden shadow-2xl border border-stone-800/60 group"
                     >
-                        {/* Image Slider */}
                         <div className="relative w-full aspect-video">
                             {[
                                 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=675&fit=crop',
@@ -268,30 +280,30 @@ const Home = () => {
                                     key={index}
                                     src={img}
                                     alt={`Showcase ${index + 1}`}
-                                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'
-                                        }`}
+                                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === currentImageIndex ? 'opacity-100' : 'opacity-0'}`}
                                 />
                             ))}
                         </div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 via-transparent to-transparent pointer-events-none"></div>
-                        <div className="absolute bottom-6 left-6 right-6">
-                            <p className="text-white/90 text-lg font-medium drop-shadow-lg">Crafting unforgettable culinary experiences, one dish at a time</p>
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                        <div className="absolute bottom-6 left-7">
+                            <p className="text-cream/80 text-base font-light tracking-wide drop-shadow-lg italic">Every plate tells a story.</p>
                         </div>
                     </motion.div>
                 </div>
             </section>
 
             {/* Newsletter Section */}
-            <section className="py-24 px-4 bg-primary/10 relative overflow-hidden">
-                <div className="absolute -top-24 -right-24 w-96 h-96 bg-primary/20 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-secondary/20 rounded-full blur-3xl"></div>
+            <section className="py-24 px-4 relative overflow-hidden" style={{backgroundColor:'#100A06'}}>
+                <div className="absolute -top-32 -right-32 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
 
-                <div className="max-w-4xl mx-auto text-center relative z-10">
-                    <h2 className="text-4xl font-extrabold mb-6 text-white">Subscribe to our Newsletter</h2>
-                    <p className="text-gray-300 mb-8 text-lg">Get exclusive offers, new menu updates, and 20% off your first order!</p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-lg mx-auto">
-                        <input type="email" placeholder="Enter your email" className="flex-grow px-6 py-4 rounded-full bg-stone-900 border border-stone-700 text-white focus:border-primary focus:outline-none" />
-                        <button className="bg-gradient-to-r from-primary to-secondary text-stone-900 font-bold px-8 py-4 rounded-full hover:scale-105 transition-transform shadow-lg">Subscribe</button>
+                <div className="max-w-2xl mx-auto text-center relative z-10">
+                    <p className="text-primary/60 text-xs font-semibold tracking-[0.28em] uppercase mb-4">— Stay in the Loop</p>
+                    <h2 className="text-4xl md:text-5xl font-semibold mb-4 text-white">Get Exclusive <span className="italic text-primary">Offers</span></h2>
+                    <p className="text-stone-500 mb-10 text-base">New dishes, seasonal specials, and 20% off your first order — straight to your inbox.</p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <input type="email" placeholder="your@email.com" className="flex-grow px-5 py-3.5 rounded-xl border border-stone-700 text-white focus:border-primary focus:outline-none text-sm" style={{backgroundColor:'#161210'}} />
+                        <button className="bg-gradient-to-r from-primary to-secondary text-stone-950 font-semibold px-7 py-3.5 rounded-xl hover:opacity-90 transition-opacity shadow-lg text-sm">Subscribe</button>
                     </div>
                 </div>
             </section>

@@ -6,28 +6,26 @@ const Footer = () => {
     const currentYear = new Date().getFullYear();
 
     return (
-        <footer className="bg-stone-950 text-white border-t border-primary/20">
+        <footer className="text-white border-t border-primary/10" style={{backgroundColor:'#0A0806'}}>
             {/* Main Footer Content */}
             <div className="max-w-7xl mx-auto px-4 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Brand Section */}
                     <div className="col-span-1 md:col-span-2">
-                        <h3 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-4">
-                            SIZZORA
-                        </h3>
-                        <p className="text-gray-400 mb-6 max-w-md">
-                            Experience the finest culinary delights delivered right to your doorstep.
-                            Fresh ingredients, passionate chefs, unforgettable flavors.
+                        <h3 className="text-3xl font-semibold italic text-primary mb-2">Sizzora</h3>
+                        <p className="text-stone-600 text-xs tracking-[0.2em] uppercase mb-5">Flame Kitchen</p>
+                        <p className="text-stone-500 mb-7 max-w-md text-sm leading-relaxed">
+                            Bold flavors, honest ingredients, delivered with care. Sizzora is where every meal becomes a moment.
                         </p>
-                        <div className="flex space-x-4">
-                            <a href="#" className="bg-stone-800 hover:bg-primary hover:text-dark p-3 rounded-full transition-all duration-300">
-                                <FaFacebookF size={18} />
+                        <div className="flex space-x-3">
+                            <a href="#" className="w-9 h-9 flex items-center justify-center rounded-lg border border-stone-800 text-stone-500 hover:border-primary/50 hover:text-primary transition-all duration-300">
+                                <FaFacebookF size={14} />
                             </a>
-                            <a href="#" className="bg-stone-800 hover:bg-primary hover:text-dark p-3 rounded-full transition-all duration-300">
-                                <FaInstagram size={18} />
+                            <a href="#" className="w-9 h-9 flex items-center justify-center rounded-lg border border-stone-800 text-stone-500 hover:border-primary/50 hover:text-primary transition-all duration-300">
+                                <FaInstagram size={14} />
                             </a>
-                            <a href="#" className="bg-stone-800 hover:bg-primary hover:text-dark p-3 rounded-full transition-all duration-300">
-                                <FaTwitter size={18} />
+                            <a href="#" className="w-9 h-9 flex items-center justify-center rounded-lg border border-stone-800 text-stone-500 hover:border-primary/50 hover:text-primary transition-all duration-300">
+                                <FaTwitter size={14} />
                             </a>
                         </div>
                     </div>
@@ -65,7 +63,7 @@ const Footer = () => {
             </div>
 
             {/* Bottom Bar - Copyright & Legal */}
-            <div className="border-t border-stone-800">
+            <div className="border-t border-stone-900/80">
                 <div className="max-w-7xl mx-auto px-4 py-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <div className="text-center md:text-left">

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Lato:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -9,9 +9,9 @@ html {
 }
 
 body {
-    font-family: 'Lato', sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     @apply text-white antialiased;
-    background-color: #120f10;
+    background-color: #0A0806;
 }
 
 #root {
@@ -22,10 +22,10 @@ body {
     position: relative;
     isolation: isolate;
     background:
-        radial-gradient(circle at 12% 12%, rgba(254, 183, 5, 0.14), transparent 36%),
-        radial-gradient(circle at 82% 6%, rgba(129, 4, 49, 0.26), transparent 35%),
-        radial-gradient(circle at 50% 120%, rgba(247, 68, 7, 0.2), transparent 40%),
-        linear-gradient(180deg, #130d09 0%, #0f0d13 60%, #0b0a10 100%);
+        radial-gradient(circle at 14% 10%, rgba(232, 150, 58, 0.12), transparent 38%),
+        radial-gradient(circle at 84% 5%, rgba(122, 63, 34, 0.22), transparent 36%),
+        radial-gradient(circle at 50% 115%, rgba(196, 59, 44, 0.15), transparent 42%),
+        linear-gradient(180deg, #100A06 0%, #0D0906 60%, #0A0806 100%);
 }
 
 .app-shell::before {
@@ -34,10 +34,10 @@ body {
     inset: 0;
     pointer-events: none;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 48px 48px;
-    opacity: 0.22;
+        linear-gradient(rgba(232, 150, 58, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(232, 150, 58, 0.025) 1px, transparent 1px);
+    background-size: 52px 52px;
+    opacity: 0.3;
     z-index: -1;
 }
 
@@ -59,7 +59,8 @@ h3,
 h4,
 h5,
 h6 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    letter-spacing: -0.01em;
 }
 
 /* Video fade animation for smooth loop */

@@ -20,8 +20,8 @@ const Navbar = () => {
 
     return (
         <nav className="fixed w-full z-50 top-0 left-0">
-            <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(10,10,12,0.95),rgba(28,15,6,0.92),rgba(65,16,8,0.9))] backdrop-blur-xl border-b border-primary/20 shadow-[0_12px_40px_rgba(0,0,0,0.45)]">
-                <div className="absolute inset-0 opacity-25 pointer-events-none bg-[radial-gradient(circle_at_10%_20%,rgba(254,183,5,0.35),transparent_45%),radial-gradient(circle_at_85%_0%,rgba(129,4,49,0.4),transparent_40%)]" />
+            <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(8,6,4,0.97),rgba(18,11,6,0.95),rgba(40,16,8,0.93))] backdrop-blur-xl border-b border-primary/15 shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
+                <div className="absolute inset-0 opacity-30 pointer-events-none bg-[radial-gradient(circle_at_10%_20%,rgba(232,150,58,0.28),transparent_45%),radial-gradient(circle_at_85%_0%,rgba(122,63,34,0.35),transparent_40%)]" />
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 relative">
@@ -32,8 +32,8 @@ const Navbar = () => {
                             className="group flex items-center gap-3 rounded-2xl px-4 py-2 border border-primary/35 bg-white/[0.06] shadow-[0_8px_26px_rgba(0,0,0,0.35)] hover:border-primary/70 transition-all"
                         >
                             <div className="leading-tight">
-                                <p className="text-white text-[26px] leading-[0.95] font-semibold tracking-[0.08em] font-['Playfair_Display']">Sizzora</p>
-                                <p className="text-primary/90 text-[11px] font-semibold tracking-[0.18em] uppercase">Flame Kitchen</p>
+                                <p className="text-cream text-[26px] leading-[0.95] font-semibold tracking-[0.06em] font-['Cormorant_Garamond']">Sizzora</p>
+                                <p className="text-primary/80 text-[10px] font-semibold tracking-[0.22em] uppercase">Flame Kitchen</p>
                             </div>
                         </Link>
                     </div>
