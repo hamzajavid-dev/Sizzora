@@ -327,7 +327,18 @@ router.post('/ai', async (req, res) => {
             request.end();
         });
 
-        res.json(data);
+        // Normalize n8n response — it can return an array or nested object
+        const extractText = (d) => {
+            if (typeof d === 'string') return d;
+            if (Array.isArray(d) && d.length > 0) return extractText(d[0]);
+            if (d && typeof d === 'object') {
+                const v = d.output ?? d.text ?? d.reply ?? d.message;
+                if (v != null) return extractText(v);
+            }
+            return null;
+        };
+        const reply = extractText(data);
+        res.json({ output: reply || '' });
     } catch (err) {
         res.status(502).json({ error: 'AI service unavailable', details: err.message });
     }
